@@ -1,15 +1,21 @@
 #import "ZLTagListView.h"
 
+@interface ZLTagCollectionView : UICollectionView
 
+@end
+@implementation ZLTagCollectionView
+- (UIUserInterfaceLayoutDirection)effectiveUserInterfaceLayoutDirection {
+    return  [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:UIView.appearance.semanticContentAttribute];
+}
+@end
 @implementation ZLTagFlowLayout
+
 - (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
     NSArray *originalAttributes = [super layoutAttributesForElementsInRect:rect];
     NSMutableArray *attributes = [[NSMutableArray alloc] initWithArray:originalAttributes copyItems:YES];
-    
     if (self.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
         return attributes;
     }
-    
     NSMutableArray<NSMutableArray<UICollectionViewLayoutAttributes *> *> *rows = [NSMutableArray array];
     CGFloat currentY = -CGFLOAT_MAX;
     
@@ -30,6 +36,7 @@
     return attributes;
 }
 
+
 - (void)alignRow:(NSMutableArray<UICollectionViewLayoutAttributes *> *)row {
     if (row.count == 0) return;
     
@@ -42,7 +49,8 @@
     totalWidth += (row.count - 1) * self.minimumInteritemSpacing;
     
     CGFloat offset = 0;
-    switch (self.alignment) {
+    ZLTagAlignment effectiveAlignment = self.alignment;
+    switch (effectiveAlignment) {
         case ZLTagAlignmentLeft:
             offset = 0;
             break;
@@ -54,19 +62,34 @@
             break;
     }
     
-    CGFloat currentX = self.sectionInset.left + offset;
-    for (UICollectionViewLayoutAttributes *attr in row) {
-        CGRect frame = attr.frame;
-        frame.origin.x = currentX;
-        attr.frame = frame;
-        currentX += frame.size.width + self.minimumInteritemSpacing;
-    }
+//    if (self.isRTL) {
+//        // RTL: 从右向左排列
+//        CGFloat currentX = self.collectionView.bounds.size.width - self.sectionInset.right - offset;
+//        for (UICollectionViewLayoutAttributes *attr in row) {
+//            CGRect frame = attr.frame;
+//            currentX -= frame.size.width;
+//            frame.origin.x = currentX;
+//            attr.frame = frame;
+//            currentX -= self.minimumInteritemSpacing;
+//        }
+//    } else {
+        // LTR: 从左向右排列
+        CGFloat currentX = self.sectionInset.left + offset;
+        for (UICollectionViewLayoutAttributes *attr in row) {
+            CGRect frame = attr.frame;
+            frame.origin.x = currentX;
+            attr.frame = frame;
+            currentX += frame.size.width + self.minimumInteritemSpacing;
+        }
+//    }
 }
 
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
     return YES;
 }
-
+- (BOOL)flipsHorizontallyInOppositeLayoutDirection {
+    return  [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:UIView.appearance.semanticContentAttribute] == UIUserInterfaceLayoutDirectionRightToLeft;
+}
 @end
 
 
@@ -78,7 +101,6 @@
 @end
 
 @implementation ZLTagListView
-
 #pragma mark - Init
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -109,6 +131,8 @@
     _maxHeight = CGFLOAT_MAX;
     _minWidth = 0;
     _minHeight = 0;
+    _forceRTL = NO;
+    _autoDetectRTL = YES;
 }
 
 - (void)setupCollectionView {
@@ -118,8 +142,9 @@
     _flowLayout.minimumInteritemSpacing = _itemSpacing;
     _flowLayout.sectionInset = _contentInset;
     _flowLayout.scrollDirection = UICollectionViewScrollDirectionVertical;
+    _flowLayout.isRTL = [self isCurrentLayoutRTL];
     
-    _collectionView = [[UICollectionView alloc] initWithFrame:self.bounds collectionViewLayout:_flowLayout];
+    _collectionView = [[ZLTagCollectionView alloc] initWithFrame:self.bounds collectionViewLayout:_flowLayout];
     _collectionView.backgroundColor = [UIColor clearColor];
     _collectionView.dataSource = self;
     _collectionView.delegate = self;
@@ -128,13 +153,27 @@
     _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     if (@available(iOS 11.0, *)) {
         _collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    } else {
     }
     [self addSubview:_collectionView];
 }
 
+- (BOOL)isCurrentLayoutRTL {
+    if (_forceRTL) {
+        return YES;
+    }
+    if (_autoDetectRTL) {
+        BOOL rtl =  [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:UIView.appearance.semanticContentAttribute] == UIUserInterfaceLayoutDirectionRightToLeft;
+        return rtl;
+    }
+    return NO;
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
+    
+    // 更新RTL状态
+    _flowLayout.isRTL = [self isCurrentLayoutRTL];
+    
     if (!CGRectEqualToRect(_collectionView.frame, self.bounds)) {
         _collectionView.frame = self.bounds;
         [_flowLayout invalidateLayout];
@@ -183,6 +222,28 @@
     [self setNeedsLayout];
 }
 
+- (void)setMinWidth:(CGFloat)minWidth {
+    _minWidth = minWidth;
+    [self setNeedsLayout];
+}
+
+- (void)setMinHeight:(CGFloat)minHeight {
+    _minHeight = minHeight;
+    [self setNeedsLayout];
+}
+
+- (void)setForceRTL:(BOOL)forceRTL {
+    _forceRTL = forceRTL;
+    _flowLayout.isRTL = [self isCurrentLayoutRTL];
+    [_flowLayout invalidateLayout];
+}
+
+- (void)setAutoDetectRTL:(BOOL)autoDetectRTL {
+    _autoDetectRTL = autoDetectRTL;
+    _flowLayout.isRTL = [self isCurrentLayoutRTL];
+    [_flowLayout invalidateLayout];
+}
+
 #pragma mark - Public Methods
 
 - (void)registerClass:(Class)cellClass forCellWithReuseIdentifier:(NSString *)identifier {
@@ -211,6 +272,7 @@
     CGFloat width = self.bounds.size.width > 0 ? self.bounds.size.width : _maxWidth;
     return [self calculateContentSizeWithWidth:width];
 }
+
 - (CGSize)calculateContentSizeWithWidth:(CGFloat)width {
     if (!_dataSource) return CGSizeMake(_minWidth, _minHeight);
 
@@ -218,13 +280,11 @@
     if (count == 0) {
         CGFloat emptyWidth = _contentInset.left + _contentInset.right;
         CGFloat emptyHeight = _contentInset.top + _contentInset.bottom;
-        // 应用最小最大限制
         emptyWidth = MAX(_minWidth, MIN(emptyWidth, _maxWidth));
         emptyHeight = MAX(_minHeight, MIN(emptyHeight, _maxHeight));
         return CGSizeMake(emptyWidth, emptyHeight);
     }
 
-    // 计算可用宽度（受maxWidth限制）
     CGFloat availableWidth = width;
     if (_maxWidth < CGFLOAT_MAX) {
         availableWidth = MIN(width, _maxWidth);
@@ -232,11 +292,9 @@
     if (availableWidth <= 0) {
         availableWidth = _maxWidth < CGFLOAT_MAX ? _maxWidth : 300;
     }
-    // 可用宽度不能小于最小宽度
     availableWidth = MAX(availableWidth, _minWidth);
 
     if (_horizontalScroll) {
-        // 水平滚动时计算总宽度和高度
         CGFloat totalWidth = _contentInset.left;
         CGFloat maxItemHeight = 0;
 
@@ -252,13 +310,11 @@
 
         CGFloat contentHeight = maxItemHeight + _contentInset.top + _contentInset.bottom;
 
-        // 应用最小最大宽高限制
         CGFloat finalWidth = MAX(_minWidth, MIN(totalWidth, _maxWidth));
         CGFloat finalHeight = MAX(_minHeight, MIN(contentHeight, _maxHeight));
 
         return CGSizeMake(finalWidth, finalHeight);
     } else {
-        // 垂直滚动时计算总高度和宽度
         CGFloat contentWidth = availableWidth - _contentInset.left - _contentInset.right;
         CGFloat currentX = 0;
         CGFloat currentY = _contentInset.top;
@@ -287,7 +343,6 @@
         CGFloat totalHeight = currentY + lineHeight + _contentInset.bottom;
         CGFloat totalWidth = maxLineWidth + _contentInset.left + _contentInset.right;
 
-        // 应用最小最大宽高限制
         CGFloat finalWidth = MAX(_minWidth, MIN(totalWidth, _maxWidth));
         CGFloat finalHeight = MAX(_minHeight, MIN(totalHeight, _maxHeight));
 
@@ -345,4 +400,5 @@
         [_delegate tagListView:self didSelectTagAtIndex:indexPath.item];
     }
 }
+
 @end

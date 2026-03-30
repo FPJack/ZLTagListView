@@ -22,7 +22,8 @@ typedef NS_ENUM(NSInteger, ZLTagAlignment) {
 @interface ZLTagFlowLayout : UICollectionViewFlowLayout
 
 @property (nonatomic, assign) ZLTagAlignment alignment;
-
+/// 是否RTL布局
+@property (nonatomic, assign) BOOL isRTL;
 @end
 
 @interface ZLTagListView : UIView
@@ -30,6 +31,10 @@ typedef NS_ENUM(NSInteger, ZLTagAlignment) {
 @property (nonatomic, strong, readonly) ZLTagFlowLayout *flowLayout;
 @property (nonatomic, weak) id<ZLTagListViewDataSource> dataSource;
 @property (nonatomic, weak) id<ZLTagListViewDelegate> delegate;
+/// 是否支持RTL（从右到左）布局，默认跟随系统 默认NO
+@property (nonatomic, assign) BOOL forceRTL;
+/// 是否自动检测RTL，默认YES
+@property (nonatomic, assign) BOOL autoDetectRTL;
 /// 最大宽度，默认CGFLOAT_MAX（无限制）
 @property (nonatomic, assign) CGFloat maxWidth;
 /// 最大高度，默认CGFLOAT_MAX（无限制）

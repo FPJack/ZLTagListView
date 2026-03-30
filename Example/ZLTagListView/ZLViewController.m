@@ -9,7 +9,6 @@
 #import "ZLViewController.h"
 #import <ZLTagListView/ZLTagListView.h>
 #import "MyTagCell.h"
-#import <ZLPopView/ZLPopView.h>
 @interface ZLViewController ()<ZLTagListViewDelegate,ZLTagListViewDataSource>
 @property (nonatomic, strong) ZLTagListView *tagListView;
 @property (nonatomic, copy) NSArray<NSString *> *tags;
@@ -45,23 +44,7 @@
     // tagListView会自动返回正确的intrinsicContentSize
     
 }
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    kPopViewColumnBuilder
-    .title(@"选择对齐方式")
-    .alignmentCenter
-    .addViewBK(^UIView * _Nonnull{
-        ZLTagListView *tagListView = [[ZLTagListView alloc] initWithFrame:CGRectZero];
-        tagListView.backgroundColor = [UIColor orangeColor];
-        tagListView.alignment = ZLTagAlignmentRight; // 左对齐
-        [tagListView registerClass:[MyTagCell class] forCellWithReuseIdentifier:@"MyTagCell"];
-        tagListView.delegate = self;
-        tagListView.dataSource = self;
-        tagListView.maxWidth = self.view.bounds.size.width;   // 最大宽度300
-//        tagListView.maxHeight = 200;  // 最大高度200
-        return tagListView;
-    })
-    .showBottomPopView();
-}
+
 #pragma mark - ZLTagListViewDataSource
 
 - (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView {
