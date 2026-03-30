@@ -1,0 +1,6 @@
+framework module ZLPopView {
+  umbrella header "ZLPopView-umbrella.h"
+
+  export *
+  module * { export * }
+}

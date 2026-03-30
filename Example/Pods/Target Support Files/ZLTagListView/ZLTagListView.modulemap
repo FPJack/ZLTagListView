@@ -1,0 +1,6 @@
+framework module ZLTagListView {
+  umbrella header "ZLTagListView-umbrella.h"
+
+  export *
+  module * { export * }
+}
