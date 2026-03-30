@@ -21,6 +21,7 @@
 		6003F5BA195388D20070C39A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5B8195388D20070C39A /* InfoPlist.strings */; };
 		6003F5BC195388D20070C39A /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F5BB195388D20070C39A /* Tests.m */; };
 		71719F9F1E33DC2100824A3D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */; };
+		847AE11F2F7A2F2A00DEEC10 /* MyTagCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 847AE11E2F7A2F2A00DEEC10 /* MyTagCell.m */; };
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
 		BE65465D64C645BD0AAFEA69 /* Pods_ZLTagListView_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E0941593DA4CDF79C9C9B55 /* Pods_ZLTagListView_Example.framework */; };
 		EC9E88E911C82E43FB4926D4 /* Pods_ZLTagListView_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8ABFD31B8E8BEFE35A51BC49 /* Pods_ZLTagListView_Tests.framework */; };
@@ -37,7 +38,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		05C990DCD5D6BABEC177A9A1 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		05C990DCD5D6BABEC177A9A1 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		0E0941593DA4CDF79C9C9B55 /* Pods_ZLTagListView_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZLTagListView_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		213BB6E6E5A8BB6BD96C283D /* Pods-ZLTagListView_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLTagListView_Tests.debug.xcconfig"; path = "Target Support Files/Pods-ZLTagListView_Tests/Pods-ZLTagListView_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* ZLTagListView_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZLTagListView_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -60,11 +61,13 @@
 		6003F5BB195388D20070C39A /* Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests.m; sourceTree = "<group>"; };
 		606FC2411953D9B200FFA9A0 /* Tests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests-Prefix.pch"; sourceTree = "<group>"; };
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		847AE11D2F7A2F2A00DEEC10 /* MyTagCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MyTagCell.h; sourceTree = "<group>"; };
+		847AE11E2F7A2F2A00DEEC10 /* MyTagCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MyTagCell.m; sourceTree = "<group>"; };
 		873B8AEA1B1F5CCA007FD442 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		89ECB4F5526C866CAA5E49BE /* Pods-ZLTagListView_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLTagListView_Example.debug.xcconfig"; path = "Target Support Files/Pods-ZLTagListView_Example/Pods-ZLTagListView_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		8ABFD31B8E8BEFE35A51BC49 /* Pods_ZLTagListView_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZLTagListView_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A9F37AD2CA7D4138B5F140C7 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		B099B31127A0D35939087519 /* ZLTagListView.podspec */ = {isa = PBXFileReference; includeInIndex = 1; name = ZLTagListView.podspec; path = ../ZLTagListView.podspec; sourceTree = "<group>"; };
+		A9F37AD2CA7D4138B5F140C7 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		B099B31127A0D35939087519 /* ZLTagListView.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = ZLTagListView.podspec; path = ../ZLTagListView.podspec; sourceTree = "<group>"; };
 		B14700ECEB4BA00CDBDC57EB /* Pods-ZLTagListView_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLTagListView_Example.release.xcconfig"; path = "Target Support Files/Pods-ZLTagListView_Example/Pods-ZLTagListView_Example.release.xcconfig"; sourceTree = "<group>"; };
 		F1F31C79C9F786BEF6A47C17 /* Pods-ZLTagListView_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLTagListView_Tests.release.xcconfig"; path = "Target Support Files/Pods-ZLTagListView_Tests/Pods-ZLTagListView_Tests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -137,6 +140,8 @@
 				873B8AEA1B1F5CCA007FD442 /* Main.storyboard */,
 				6003F5A5195388D20070C39A /* ZLViewController.h */,
 				6003F5A6195388D20070C39A /* ZLViewController.m */,
+				847AE11D2F7A2F2A00DEEC10 /* MyTagCell.h */,
+				847AE11E2F7A2F2A00DEEC10 /* MyTagCell.m */,
 				71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */,
 				6003F5A8195388D20070C39A /* Images.xcassets */,
 				6003F594195388D20070C39A /* Supporting Files */,
@@ -193,7 +198,6 @@
 				213BB6E6E5A8BB6BD96C283D /* Pods-ZLTagListView_Tests.debug.xcconfig */,
 				F1F31C79C9F786BEF6A47C17 /* Pods-ZLTagListView_Tests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -259,6 +263,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -321,10 +326,12 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-ZLTagListView_Example/Pods-ZLTagListView_Example-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/ZLPopView/ZLPopView.framework",
 				"${BUILT_PRODUCTS_DIR}/ZLTagListView/ZLTagListView.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZLPopView.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZLTagListView.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -383,6 +390,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				847AE11F2F7A2F2A00DEEC10 /* MyTagCell.m in Sources */,
 				6003F59E195388D20070C39A /* ZLAppDelegate.m in Sources */,
 				6003F5A7195388D20070C39A /* ZLViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
