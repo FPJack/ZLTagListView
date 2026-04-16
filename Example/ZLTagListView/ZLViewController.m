@@ -9,36 +9,24 @@
 #import "ZLViewController.h"
 #import <ZLTagListView/ZLTagListView.h>
 #import "MyTagCell.h"
-@interface ZLViewController ()<ZLTagListViewDelegate,ZLTagListViewDataSource>
+
+@interface ZLViewController ()<ZLTagListViewDataSource>
 @property (nonatomic, strong) ZLTagListView *tagListView;
 @property (nonatomic, copy) NSArray<NSString *> *tags;
+@property (nonatomic, assign) NSInteger randomCount;
 @end
 
 @implementation ZLViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    _tags = @[@"Swift", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI" @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI"];
-    
-    ZLTagListView *tagListView = [[ZLTagListView alloc] initWithFrame:CGRectZero];
-    tagListView.alignment = ZLTagAlignmentRight; // 左对齐
-    [tagListView registerClass:[MyTagCell class] forCellWithReuseIdentifier:@"MyTagCell"];
-    tagListView.delegate = self;
-    tagListView.dataSource = self;
-//    tagListView.minWidth = 10;   // 最大宽度300
-    tagListView.maxWidth = 200;
-//    tagListView.maxHeight = 200;  // 最大高度200
-//    tagListView.minWidth = 100;   // 最小宽度100
-//    tagListView.minHeight = 50;   // 最小高度50
-//    tagListView.horizontalScroll = YES;
-    
+    _tags = @[@"Swift", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI"];
+    self.randomCount =  arc4random_uniform(_tags.count); // 生成5到14之间的随机数
+    ZLTagListView *tagListView = [self setupBlockTagListView];
+    tagListView.alignment = ZLTagAlignmentEnd; // 左对齐
+//    tagListView.dataSource = self;
+//    tagListView.maxWidth = 350;
     tagListView.translatesAutoresizingMaskIntoConstraints = NO;
-//    [tagListView setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
-//    [tagListView setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
-
-//    [tagListView.heightAnchor constraintGreaterThanOrEqualToConstant:100].active = YES; // 设置最小高度
-    
     UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[tagListView]];
     stackView.backgroundColor = UIColor.orangeColor;
     stackView.axis = UILayoutConstraintAxisVertical;
@@ -46,52 +34,69 @@
     stackView.alignment = UIStackViewAlignmentFill;
     [stackView addArrangedSubview:tagListView];
     [self.view addSubview:stackView];
-//    [stackView addArrangedSubview:UISwitch.new];
-
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
-
     [stackView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor].active = YES;
     [stackView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor].active = YES;
-//    [stackView.topAnchor constraintEqualToAnchor:self.view.topAnchor].active = YES;
-//    [stackView.heightAnchor constraintEqualToConstant:100].active = YES;
-    // 方式1：手动设置尺寸
-//    CGSize size = [tagListView calculateContentSize];
-//    tagListView.frame = CGRectMake(20, 100, size.width, size.height);
-//
-//    // 方式2：使用sizeToFit自动调整
-//    [tagListView sizeToFit];
-
-    // 方式3：配合Auto Layout使用intrinsicContentSize
-    // tagListView会自动返回正确的intrinsicContentSize
-    
 }
+- (ZLBlockTagListView *)setupBlockTagListView {
+    ZLBlockTagListView *listView = [[ZLBlockTagListView alloc] initWithFrame:CGRectZero numberOfTags:^NSInteger(ZLBlockTagListView * _Nonnull tagListView) {
+        return self.randomCount + 1;
+    } dequeueView:^UIView * _Nonnull(ZLBlockTagListView * _Nonnull tagListView, __kindof UIView * _Nullable view, NSInteger index) {
+        UILabel *label = view;
+        if (!label) {
+            label = [UILabel new];
+        }
+        ///随机颜色
+         UIColor *color = [UIColor colorWithRed:((float)arc4random_uniform(256) / 255.0) green:((float)arc4random_uniform(256) / 255.0) blue:((float)arc4random_uniform(256) / 255.0) alpha:1.0];
+        label.backgroundColor =  color;
+        
+        UIColor *textColor = [UIColor colorWithRed:((float)arc4random_uniform(256) / 255.0) green:((float)arc4random_uniform(256) / 255.0) blue:((float)arc4random_uniform(256) / 255.0) alpha:1.0];
+
+        label.text = _tags[index];
+        label.textColor = textColor;
+        return label;
+    }];
+    listView.maxWidth = 350;
+    listView.didSelectTag = ^(ZLBlockTagListView * _Nonnull tagListView, NSInteger index) {
+        NSLog(@"选中: %@", _tags[index]);
+        self.randomCount =  arc4random_uniform(_tags.count); // 生成5到14之间的随机数
+        [tagListView reloadData];
+    };
+
+    return listView;
+}
+
+
 
 #pragma mark - ZLTagListViewDataSource
 
 - (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView {
-    return _tags.count;
+    return self.randomCount + 1;
 }
+- (UIView *)tagListView:(ZLTagListView *)tagListView dequeueView:(__kindof UIView *)view forTagAtIndex:(NSInteger)index {
+    UILabel *label = view;
+    if (!label) {
+        label = [UILabel new];
+    }
+    UIColor *color = [UIColor colorWithRed:((float)arc4random_uniform(256) / 255.0) green:((float)arc4random_uniform(256) / 255.0) blue:((float)arc4random_uniform(256) / 255.0) alpha:1.0];
 
-- (UICollectionViewCell *)tagListView:(ZLTagListView *)tagListView cellForTagAtIndex:(NSInteger)index {
-    MyTagCell *cell = [tagListView dequeueReusableCellWithReuseIdentifier:@"MyTagCell" forIndex:index];
-    cell.titleLabel.text = _tags[index];
-    return cell;
+    label.backgroundColor = color;
+    
+    ///生成随机颜色
+    label.text = _tags[index];
+    return label;
 }
-
-- (CGSize)tagListView:(ZLTagListView *)tagListView sizeForTagAtIndex:(NSInteger)index {
-    NSString *tag = _tags[index];
-    CGSize textSize = [tag boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)
-                                        options:NSStringDrawingUsesLineFragmentOrigin
-                                     attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:14]}
-                                        context:nil].size;
-    return CGSizeMake(ceil(textSize.width) + 24, ceil(textSize.height) + 12);
-}
-
 #pragma mark - ZLTagListViewDelegate
 
 - (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index {
     NSLog(@"选中: %@", _tags[index]);
+    self.randomCount =  arc4random_uniform(_tags.count); // 生成5到14之间的随机数
+    [tagListView reloadData];
 }
-
-
+- (void)tagListView:(ZLTagListView *)tagListView didUpdateContentHeight:(CGFloat)height {
+    NSLog(@"内容高度更新: %.2f", height);
+}
+- (void)tagListView:(ZLTagListView *)tagListView didUpdateContentWidth:(CGFloat)width {
+    NSLog(@"内容宽度更新: %.2f", width);
+}
 @end

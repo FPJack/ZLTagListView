@@ -3,21 +3,31 @@
 @class ZLTagListView;
 NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger, ZLTagAlignment) {
-    ZLTagAlignmentLeft,
+    ZLTagAlignmentStart,
     ZLTagAlignmentCenter,
-    ZLTagAlignmentRight
+    ZLTagAlignmentEnd
 };
 @protocol ZLTagListViewDataSource <NSObject>
 @required
 - (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView;
-- (UICollectionViewCell *)tagListView:(ZLTagListView *)tagListView cellForTagAtIndex:(NSInteger)index;
-- (CGSize)tagListView:(ZLTagListView *)tagListView sizeForTagAtIndex:(NSInteger)index;
-@end
-@protocol ZLTagListViewDelegate <NSObject>
-@optional
-- (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index;
-@end
 
+/// 返回标签视图
+/// - Parameters:
+///   - tagListView: 标签列表视图
+///   - view: 可重用的标签视图，如果为nil则需要创建一个新的视图
+///   - index: 标签索引
+- (UIView *)tagListView:(ZLTagListView *)tagListView
+            dequeueView:(__kindof UIView * _Nullable)view
+          forTagAtIndex:(NSInteger)index;
+@optional
+///标签被选中
+- (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index;
+///高度发生变化
+- (void)tagListView:(ZLTagListView *)tagListView didUpdateContentHeight:(CGFloat)height;
+///宽度发生变化
+- (void)tagListView:(ZLTagListView *)tagListView didUpdateContentWidth:(CGFloat)width;
+
+@end
 
 @interface ZLTagFlowLayout : UICollectionViewFlowLayout
 
@@ -27,10 +37,7 @@ typedef NS_ENUM(NSInteger, ZLTagAlignment) {
 @end
 
 @interface ZLTagListView : UIView
-@property (nonatomic, strong, readonly) UICollectionView *collectionView;
-@property (nonatomic, strong, readonly) ZLTagFlowLayout *flowLayout;
 @property (nonatomic, weak) id<ZLTagListViewDataSource> dataSource;
-@property (nonatomic, weak) id<ZLTagListViewDelegate> delegate;
 /// 是否支持RTL（从右到左）布局，默认跟随系统 默认NO
 @property (nonatomic, assign) BOOL forceRTL;
 /// 是否自动检测RTL，默认YES
@@ -53,15 +60,24 @@ typedef NS_ENUM(NSInteger, ZLTagAlignment) {
 @property (nonatomic, assign) UIEdgeInsets contentInset;
 /// 是否水平滚动，默认NO
 @property (nonatomic, assign) BOOL horizontalScroll;
-/// 注册自定义Cell
-- (void)registerClass:(Class)cellClass forCellWithReuseIdentifier:(NSString *)identifier;
-- (void)registerNib:(UINib *)nib forCellWithReuseIdentifier:(NSString *)identifier;
-/// 获取可复用的Cell
-- (__kindof UICollectionViewCell *)dequeueReusableCellWithReuseIdentifier:(NSString *)identifier forIndex:(NSInteger)index;
 /// 计算实际内容尺寸（受最大宽高限制）
 - (CGSize)calculateContentSize;
+/// 计算内容尺寸，受最大宽度限制
 - (CGSize)calculateContentSizeWithWidth:(CGFloat)width;
 /// 刷新数据
 - (void)reloadData;
+@end
+
+///便捷TagListView子类 提供Block方式回调
+@interface ZLBlockTagListView : ZLTagListView <ZLTagListViewDataSource>
+
+@property (nonatomic, copy) NSInteger (^numberOfTags)(ZLBlockTagListView *tagListView);
+@property (nonatomic, copy) UIView * (^dequeueView)(ZLBlockTagListView  *tagListView, __kindof UIView * _Nullable view, NSInteger index);
+@property (nonatomic, copy) void (^didSelectTag)(ZLBlockTagListView * tagListView, NSInteger index);
+@property (nonatomic, copy) void (^didUpdateContentHeight)(ZLBlockTagListView * tagListView, CGFloat height);
+@property (nonatomic, copy) void (^didUpdateContentWidth)(ZLBlockTagListView * tagListView, CGFloat width);
+- (instancetype)initWithFrame:(CGRect)frame
+                 numberOfTags:(NSInteger (^)(ZLBlockTagListView *tagListView))numberOfTags
+                  dequeueView:(UIView * (^)(ZLBlockTagListView  *tagListView, __kindof UIView * _Nullable view, NSInteger index))dequeueView;
 @end
 NS_ASSUME_NONNULL_END

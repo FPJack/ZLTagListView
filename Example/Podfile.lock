@@ -1,27 +1,16 @@
 PODS:
-  - FBSnapshotTestCase (2.1.4):
-    - FBSnapshotTestCase/SwiftSupport (= 2.1.4)
-  - FBSnapshotTestCase/Core (2.1.4)
-  - FBSnapshotTestCase/SwiftSupport (2.1.4):
-    - FBSnapshotTestCase/Core
-  - ZLTagListView (0.1.0)
+  - ZLTagListView (0.1.1)
 
 DEPENDENCIES:
-  - FBSnapshotTestCase
   - ZLTagListView (from `../`)
-
-SPEC REPOS:
-  trunk:
-    - FBSnapshotTestCase
 
 EXTERNAL SOURCES:
   ZLTagListView:
     :path: "../"
 
 SPEC CHECKSUMS:
-  FBSnapshotTestCase: 094f9f314decbabe373b87cc339bea235a63e07a
-  ZLTagListView: 56c1f511d704dbe83c36304c662bd8a580261ceb
+  ZLTagListView: c4698f1b6e0ba73638ed8a28d631d92b36823d93
 
-PODFILE CHECKSUM: 9ff79da0103056de475a73f2a640cea6f4436597
+PODFILE CHECKSUM: 3ef493395d4f2d89fb6ed6229f9d0cd81c4f93ed
 
 COCOAPODS: 1.16.2

@@ -7,7 +7,6 @@
 //
 
 #import "MyTagCell.h"
-
 @implementation MyTagCell
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
@@ -19,6 +18,12 @@
         _titleLabel.textColor = [UIColor whiteColor];
         _titleLabel.font = [UIFont systemFontOfSize:14];
         [self.contentView addSubview:_titleLabel];
+        _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+        [_titleLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor].active = YES;
+        [_titleLabel.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor].active = YES;
+        [_titleLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor].active = YES;
+        [_titleLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor].active = YES;
+
     }
     return self;
 }

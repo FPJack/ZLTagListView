@@ -51,13 +51,13 @@
     CGFloat offset = 0;
     ZLTagAlignment effectiveAlignment = self.alignment;
     switch (effectiveAlignment) {
-        case ZLTagAlignmentLeft:
+        case ZLTagAlignmentStart:
             offset = 0;
             break;
         case ZLTagAlignmentCenter:
             offset = (collectionViewWidth - totalWidth) / 2.0;
             break;
-        case ZLTagAlignmentRight:
+        case ZLTagAlignmentEnd:
             offset = collectionViewWidth - totalWidth;
             break;
     }
@@ -92,12 +92,19 @@
 }
 @end
 
+@interface ZLTagCell : UICollectionViewCell
+@end
+@implementation ZLTagCell
+@end
+
+
 
 @interface ZLTagListView () <UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
-
-@property (nonatomic, strong) UICollectionView *collectionView;
+@property (nonatomic, strong) ZLTagCollectionView *collectionView;
 @property (nonatomic, strong) ZLTagFlowLayout *flowLayout;
-
+@property (nonatomic,strong)NSMutableDictionary<NSNumber *,UIView *> *viewCache;
+@property (nonatomic,strong)NSMutableDictionary<NSNumber *,NSValue *> *sizeCache;
+@property (nonatomic, assign) CGSize preSize;
 @end
 
 @implementation ZLTagListView
@@ -122,7 +129,9 @@
 }
 
 - (void)setupDefaults {
-    _alignment = ZLTagAlignmentLeft;
+    self.viewCache = [NSMutableDictionary dictionary];
+    self.sizeCache = [NSMutableDictionary dictionary];
+    _alignment = ZLTagAlignmentStart;
     _lineSpacing = 10;
     _itemSpacing = 10;
     _contentInset = UIEdgeInsetsMake(10, 10, 10, 10);
@@ -143,8 +152,8 @@
     _flowLayout.sectionInset = _contentInset;
     _flowLayout.scrollDirection = UICollectionViewScrollDirectionVertical;
     _flowLayout.isRTL = [self isCurrentLayoutRTL];
-    
     _collectionView = [[ZLTagCollectionView alloc] initWithFrame:self.bounds collectionViewLayout:_flowLayout];
+    [_collectionView registerClass:ZLTagCell.class forCellWithReuseIdentifier:@"cell"];
     _collectionView.backgroundColor = [UIColor clearColor];
     _collectionView.dataSource = self;
     _collectionView.delegate = self;
@@ -246,18 +255,8 @@
 
 #pragma mark - Public Methods
 
-- (void)registerClass:(Class)cellClass forCellWithReuseIdentifier:(NSString *)identifier {
-    [_collectionView registerClass:cellClass forCellWithReuseIdentifier:identifier];
-}
 
-- (void)registerNib:(UINib *)nib forCellWithReuseIdentifier:(NSString *)identifier {
-    [_collectionView registerNib:nib forCellWithReuseIdentifier:identifier];
-}
 
-- (__kindof UICollectionViewCell *)dequeueReusableCellWithReuseIdentifier:(NSString *)identifier forIndex:(NSInteger)index {
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
-    return [_collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
-}
 
 - (CGFloat)calculateContentHeight {
     return [self calculateContentHeightWithWidth:self.bounds.size.width];
@@ -306,7 +305,7 @@
         CGFloat maxItemHeight = 0;
 
         for (NSInteger i = 0; i < count; i++) {
-            CGSize size = [_dataSource tagListView:self sizeForTagAtIndex:i];
+            CGSize size = [self tagListView:self sizeForTagAtIndex:i];
             totalWidth += size.width;
             if (i < count - 1) {
                 totalWidth += _itemSpacing;
@@ -330,7 +329,7 @@
         CGFloat currentLineWidth = 0;
 
         for (NSInteger i = 0; i < count; i++) {
-            CGSize size = [_dataSource tagListView:self sizeForTagAtIndex:i];
+            CGSize size = [self tagListView:self sizeForTagAtIndex:i];
 
             if (currentX + size.width > contentWidth && currentX > 0) {
                 maxLineWidth = MAX(maxLineWidth, currentLineWidth - _itemSpacing);
@@ -360,14 +359,30 @@
 }
 
 - (CGSize)intrinsicContentSize {
-    return [self calculateContentSize];
+    CGSize size = [self calculateContentSize];
+    if (!CGSizeEqualToSize(size, self.preSize)) {
+        if (size.height != self.preSize.height) {
+            if ([self.dataSource respondsToSelector:@selector(tagListView:didUpdateContentHeight:)]) {
+                [self.dataSource tagListView:self didUpdateContentHeight:size.height];
+            }
+        }
+       
+        if (size.width != self.preSize.width) {
+            if ([self.dataSource respondsToSelector:@selector(tagListView:didUpdateContentWidth:)]) {
+                [self.dataSource tagListView:self didUpdateContentWidth:size.height];
+            }
+        }
+       
+        self.preSize = size;
+    }
+    return size;
 }
 
 - (void)reloadData {
+    [self.sizeCache removeAllObjects];
     [_collectionView reloadData];
     [self invalidateIntrinsicContentSize];
 }
-
 - (void)sizeToFit {
     CGSize size = [self calculateContentSize];
     CGRect frame = self.frame;
@@ -383,29 +398,116 @@
     }
     return 0;
 }
-
-- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:cellForTagAtIndex:)]) {
-        return [_dataSource tagListView:self cellForTagAtIndex:indexPath.item];
+- (UIView *)tagListView:(ZLTagListView *)tagListView
+          forTagAtIndex:(NSInteger)index {
+    UIView *cacheView = self.viewCache[@(index)];
+    if (!cacheView) {
+        if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:dequeueView:forTagAtIndex:)]) {
+            cacheView = [_dataSource tagListView:self dequeueView:nil forTagAtIndex:index];
+            self.viewCache[@(index)] = cacheView;
+        }
     }
-    return [[UICollectionViewCell alloc] init];
+    return cacheView;
+}
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    ZLTagCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
+    NSNumber *indexKey = @(indexPath.item);
+    UIView *view = self.viewCache[indexKey];
+    if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:dequeueView:forTagAtIndex:)]) {
+        view = [_dataSource tagListView:self dequeueView:view forTagAtIndex:indexPath.item];
+        if (![cell.contentView.subviews.firstObject isEqual:view]) {
+            [cell.contentView.subviews.firstObject removeFromSuperview];
+            [cell.contentView addSubview:view];
+            view.translatesAutoresizingMaskIntoConstraints = NO;
+            [view.topAnchor constraintEqualToAnchor:cell.contentView.topAnchor].active = YES;
+            [view.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor].active = YES;
+            [view.leadingAnchor constraintEqualToAnchor:cell.contentView.leadingAnchor].active = YES;
+            [view.trailingAnchor constraintEqualToAnchor:cell.contentView.trailingAnchor].active = YES;
+        }
+        self.viewCache[indexKey] = view;
+    }
+    return cell;
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:sizeForTagAtIndex:)]) {
-        return [_dataSource tagListView:self sizeForTagAtIndex:indexPath.item];
-    }
-    return CGSizeMake(50, 30);
+    return [self tagListView:self sizeForTagAtIndex:indexPath.item];
 }
+- (CGSize)tagListView:(ZLTagListView *)tagListView sizeForTagAtIndex:(NSInteger)index {
+    NSValue *cachedSize = self.sizeCache[@(index)];
+    if (cachedSize) return cachedSize.CGSizeValue;
+    
+    UIView *view = [self tagListView:self forTagAtIndex:index];
+    CGSize size = view ? [view systemLayoutSizeFittingSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) withHorizontalFittingPriority:UILayoutPriorityFittingSizeLevel verticalFittingPriority:UILayoutPriorityFittingSizeLevel] : CGSizeZero;
+    cachedSize = [NSValue valueWithCGSize:size];
+    if (cachedSize) self.sizeCache[@(index)] = cachedSize;
+    return size;
+}
+
 
 #pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (_delegate && [_delegate respondsToSelector:@selector(tagListView:didSelectTagAtIndex:)]) {
-        [_delegate tagListView:self didSelectTagAtIndex:indexPath.item];
+    if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:didSelectTagAtIndex:)]) {
+        [_dataSource tagListView:self didSelectTagAtIndex:indexPath.item];
     }
 }
+@end
 
+
+@implementation ZLBlockTagListView
+- (void)setDataSource:(id<ZLTagListViewDataSource>)dataSource {
+    if (![dataSource isEqual:self]) return;
+    [super setDataSource:dataSource];
+}
+- (instancetype)initWithFrame:(CGRect)frame
+              numberOfTags:(NSInteger (^)(ZLBlockTagListView *tagListView))numberOfTags
+                  dequeueView:(UIView * (^)(ZLBlockTagListView  *tagListView, __kindof UIView * _Nullable view, NSInteger index))dequeueView {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.numberOfTags = numberOfTags;
+        self.dequeueView = dequeueView;
+        self.dataSource = self;
+    }
+    return self;
+}
+- (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView {
+    if (self.numberOfTags) {
+        return self.numberOfTags(self);
+    }
+    return 0;
+}
+
+/// 返回标签视图
+/// - Parameters:
+///   - tagListView: 标签列表视图
+///   - view: 可重用的标签视图，如果为nil则需要创建一个新的视图
+///   - index: 标签索引
+- (UIView *)tagListView:(ZLTagListView *)tagListView
+            dequeueView:(__kindof UIView * _Nullable)view
+          forTagAtIndex:(NSInteger)index {
+    if (self.dequeueView) {
+        return self.dequeueView(self, view, index);
+    }
+    return UIView.new;
+}
+///标签被选中
+- (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index {
+    if (self.didSelectTag) {
+        self.didSelectTag(self, index);
+    }
+}
+///高度发生变化
+- (void)tagListView:(ZLTagListView *)tagListView didUpdateContentHeight:(CGFloat)height {
+    if (self.didUpdateContentHeight) {
+        self.didUpdateContentHeight(self, height);
+    }
+}
+///宽度发生变化
+- (void)tagListView:(ZLTagListView *)tagListView didUpdateContentWidth:(CGFloat)width {
+    if (self.didUpdateContentWidth) {
+        self.didUpdateContentWidth(self, width);
+    }
+}
 @end
