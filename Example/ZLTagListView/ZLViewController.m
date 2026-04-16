@@ -24,8 +24,6 @@
     self.randomCount =  arc4random_uniform(_tags.count); // 生成5到14之间的随机数
     ZLTagListView *tagListView = [self setupBlockTagListView];
     tagListView.alignment = ZLTagAlignmentEnd; // 左对齐
-//    tagListView.dataSource = self;
-//    tagListView.maxWidth = 350;
     tagListView.translatesAutoresizingMaskIntoConstraints = NO;
     UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[tagListView]];
     stackView.backgroundColor = UIColor.orangeColor;
