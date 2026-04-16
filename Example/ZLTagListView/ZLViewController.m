@@ -58,7 +58,7 @@
     listView.didSelectTag = ^(ZLBlockTagListView * _Nonnull tagListView, NSInteger index) {
         NSLog(@"选中: %@", _tags[index]);
         self.randomCount =  arc4random_uniform(_tags.count); // 生成5到14之间的随机数
-        [tagListView reloadData];
+        [tagListView syncReloadData];
     };
 
     return listView;
@@ -89,7 +89,7 @@
 - (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index {
     NSLog(@"选中: %@", _tags[index]);
     self.randomCount =  arc4random_uniform(_tags.count); // 生成5到14之间的随机数
-    [tagListView reloadData];
+    [tagListView syncReloadData];
 }
 - (void)tagListView:(ZLTagListView *)tagListView didUpdateContentHeight:(CGFloat)height {
     NSLog(@"内容高度更新: %.2f", height);

@@ -383,6 +383,10 @@
     [_collectionView reloadData];
     [self invalidateIntrinsicContentSize];
 }
+- (void)syncReloadData {
+    [self reloadData];
+    [self layoutIfNeeded];
+}
 - (void)sizeToFit {
     CGSize size = [self calculateContentSize];
     CGRect frame = self.frame;
