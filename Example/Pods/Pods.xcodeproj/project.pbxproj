@@ -35,23 +35,23 @@
 		5A69BB6361C4A6C3C0F10E0835295CB2 /* Pods-ZLTagListView_Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-ZLTagListView_Example-acknowledgements.plist"; sourceTree = "<group>"; };
 		5DC4F276E508B97AD8F12F8DB01F3ECA /* ZLTagListView-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "ZLTagListView-Info.plist"; sourceTree = "<group>"; };
 		6CEBC65DF1AB7869E034A76C97C3ED3D /* ZLTagListView.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = ZLTagListView.modulemap; sourceTree = "<group>"; };
-		6D138DF7E483866E9687013A7BB6654C /* ZLTagListView */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = ZLTagListView; path = ZLTagListView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D138DF7E483866E9687013A7BB6654C /* ZLTagListView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ZLTagListView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6DF64074B8A1827797D8B4ECF738FD79 /* Pods-ZLTagListView_Example-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-ZLTagListView_Example-dummy.m"; sourceTree = "<group>"; };
 		790FD7ED807C89974EE08C1C7EA79732 /* ZLTagListView-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ZLTagListView-umbrella.h"; sourceTree = "<group>"; };
-		7EAE7A82105F2E73336044C8B64966AE /* ZLTagListView.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = ZLTagListView.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		7EAE7A82105F2E73336044C8B64966AE /* ZLTagListView.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; path = ZLTagListView.podspec; sourceTree = "<group>"; tabWidth = 2; };
 		7FD4E8908B5003F0CD96845672C982A1 /* ZLTagListView.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = ZLTagListView.m; path = ZLTagListView/Classes/ZLTagListView.m; sourceTree = "<group>"; };
 		8F75E390750071CF8B74BDCFBDC177F3 /* ZLTagListView.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = ZLTagListView.release.xcconfig; sourceTree = "<group>"; };
-		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		9DA7057B2740A05D78A561820A8BDA14 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		9DA7057B2740A05D78A561820A8BDA14 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		A93044FA82C65F03D0629CC882B20706 /* Pods-ZLTagListView_Example.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-ZLTagListView_Example.modulemap"; sourceTree = "<group>"; };
 		AD0C54F956B15037B96F006B7CE60B4A /* ZLTagListView.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = ZLTagListView.debug.xcconfig; sourceTree = "<group>"; };
 		AF188464A60CD84A76042FA3921161E2 /* Pods-ZLTagListView_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-ZLTagListView_Example.release.xcconfig"; sourceTree = "<group>"; };
 		C5914F7A73EF0B3C986BCC4142475E4F /* Pods-ZLTagListView_Example-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-ZLTagListView_Example-frameworks.sh"; sourceTree = "<group>"; };
 		D550FACDA2AB1E808687A207E900D6E5 /* ZLTagListView.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ZLTagListView.h; path = ZLTagListView/Classes/ZLTagListView.h; sourceTree = "<group>"; };
 		DCC6597E747C3D31ACEA79CD1E1C5257 /* ZLTagListView-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "ZLTagListView-dummy.m"; sourceTree = "<group>"; };
-		E81ED6ACBE32F3C48431521F6335A5F3 /* Pods-ZLTagListView_Example */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = "Pods-ZLTagListView_Example"; path = Pods_ZLTagListView_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E81ED6ACBE32F3C48431521F6335A5F3 /* Pods_ZLTagListView_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZLTagListView_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9333B7C03101168667143B7748C63C4 /* ZLTagListView-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "ZLTagListView-prefix.pch"; sourceTree = "<group>"; };
-		F537ABC14AF796A285BF238C0BAD6305 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE; sourceTree = "<group>"; };
+		F537ABC14AF796A285BF238C0BAD6305 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		F8CD68F40DD683A305DCC6276A11B039 /* Pods-ZLTagListView_Example-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-ZLTagListView_Example-acknowledgements.markdown"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -175,8 +175,8 @@
 		EC13670977EBED76B547DF017989F3F7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E81ED6ACBE32F3C48431521F6335A5F3 /* Pods-ZLTagListView_Example */,
-				6D138DF7E483866E9687013A7BB6654C /* ZLTagListView */,
+				E81ED6ACBE32F3C48431521F6335A5F3 /* Pods_ZLTagListView_Example.framework */,
+				6D138DF7E483866E9687013A7BB6654C /* ZLTagListView.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -220,7 +220,7 @@
 			);
 			name = "Pods-ZLTagListView_Example";
 			productName = Pods_ZLTagListView_Example;
-			productReference = E81ED6ACBE32F3C48431521F6335A5F3 /* Pods-ZLTagListView_Example */;
+			productReference = E81ED6ACBE32F3C48431521F6335A5F3 /* Pods_ZLTagListView_Example.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		FE912737AF9DDD3904C8D06F1BBDB56B /* ZLTagListView */ = {
@@ -238,7 +238,7 @@
 			);
 			name = ZLTagListView;
 			productName = ZLTagListView;
-			productReference = 6D138DF7E483866E9687013A7BB6654C /* ZLTagListView */;
+			productReference = 6D138DF7E483866E9687013A7BB6654C /* ZLTagListView.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -259,8 +259,6 @@
 				en,
 			);
 			mainGroup = CF1408CF629C7361332E53B88F7BD30C;
-			minimizedProjectReferenceProxies = 0;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = EC13670977EBED76B547DF017989F3F7 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -548,8 +546,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_INSTALLED_PRODUCT = NO;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				SYMROOT = "${SRCROOT}/../build";
 			};

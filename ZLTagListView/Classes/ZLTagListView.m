@@ -405,11 +405,9 @@
 - (UIView *)tagListView:(ZLTagListView *)tagListView
           forTagAtIndex:(NSInteger)index {
     UIView *cacheView = self.viewCache[@(index)];
-    if (!cacheView) {
-        if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:dequeueView:forTagAtIndex:)]) {
-            cacheView = [_dataSource tagListView:self dequeueView:nil forTagAtIndex:index];
-            self.viewCache[@(index)] = cacheView;
-        }
+    if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:dequeueView:forTagAtIndex:)]) {
+        cacheView = [_dataSource tagListView:self dequeueView:cacheView forTagAtIndex:index];
+        self.viewCache[@(index)] = cacheView;
     }
     return cacheView;
 }
