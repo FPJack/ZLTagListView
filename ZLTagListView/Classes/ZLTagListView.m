@@ -417,6 +417,7 @@
     UIView *view = self.viewCache[indexKey];
     if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:dequeueView:forTagAtIndex:)]) {
         view = [_dataSource tagListView:self dequeueView:view forTagAtIndex:indexPath.item];
+        [view invalidateIntrinsicContentSize];
         if (![cell.contentView.subviews.firstObject isEqual:view]) {
             [cell.contentView.subviews.firstObject removeFromSuperview];
             [cell.contentView addSubview:view];

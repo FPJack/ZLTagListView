@@ -14,6 +14,7 @@
 @property (nonatomic, strong) ZLTagListView *tagListView;
 @property (nonatomic, copy) NSArray<NSString *> *tags;
 @property (nonatomic, assign) NSInteger randomCount;
+@property (nonatomic,strong)NSMutableArray *randomArr;
 @end
 
 @implementation ZLViewController
@@ -22,7 +23,10 @@
     [super viewDidLoad];
     _tags = @[@"Swift", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI", @"Objective-C", @"iOS开发", @"UIKit", @"SwiftUI"];
     self.randomCount =  arc4random_uniform(_tags.count); // 生成5到14之间的随机数
-    ZLTagListView *tagListView = [self setupBlockTagListView];
+    self.randomArr = _tags.mutableCopy;
+    ZLTagListView *tagListView = [[ZLTagListView alloc] initWithFrame:self.view.bounds];
+    tagListView.maxWidth = 300;
+    tagListView.dataSource = self;
     tagListView.alignment = ZLTagAlignmentEnd; // 左对齐
     tagListView.translatesAutoresizingMaskIntoConstraints = NO;
     UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[tagListView]];
@@ -30,7 +34,6 @@
     stackView.axis = UILayoutConstraintAxisVertical;
     stackView.distribution = UIStackViewDistributionFill;
     stackView.alignment = UIStackViewAlignmentFill;
-    [stackView addArrangedSubview:tagListView];
     [self.view addSubview:stackView];
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
     [stackView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor].active = YES;
@@ -69,7 +72,7 @@
 #pragma mark - ZLTagListViewDataSource
 
 - (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView {
-    return self.randomCount + 1;
+    return self.randomArr.count;
 }
 - (UIView *)tagListView:(ZLTagListView *)tagListView dequeueView:(__kindof UIView *)view forTagAtIndex:(NSInteger)index {
     UILabel *label = view;
@@ -79,9 +82,20 @@
     UIColor *color = [UIColor colorWithRed:((float)arc4random_uniform(256) / 255.0) green:((float)arc4random_uniform(256) / 255.0) blue:((float)arc4random_uniform(256) / 255.0) alpha:1.0];
 
     label.backgroundColor = color;
-    
+//    [label invalidateIntrinsicContentSize];
     ///生成随机颜色
-    label.text = _tags[index];
+    label.text = self.randomArr[index];
+//        [label invalidateIntrinsicContentSize];
+
+//    label.preferredMaxLayoutWidth = 10000;
+//
+//    // 3. 强制刷新布局
+//    [label setNeedsLayout];
+//    [label layoutIfNeeded];
+    
+//    CGSize size = view ? [view systemLayoutSizeFittingSize:CGSizeMake(CGFLOAT_MAX, 600) withHorizontalFittingPriority:UILayoutPriorityFittingSizeLevel verticalFittingPriority:UILayoutPriorityRequired] : CGSizeZero;
+//    NSLog(@"view: %@---size:%@",label.text,NSStringFromCGSize(size));
+    
     return label;
 }
 #pragma mark - ZLTagListViewDelegate
@@ -89,6 +103,12 @@
 - (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index {
     NSLog(@"选中: %@", _tags[index]);
     self.randomCount =  arc4random_uniform(_tags.count); // 生成5到14之间的随机数
+    self.randomArr = NSMutableArray.array;
+    [self.tags enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSInteger index =  arc4random_uniform(_tags.count); //
+        [self.randomArr addObject:self.tags[index]];
+
+    }];
     [tagListView syncReloadData];
 }
 - (void)tagListView:(ZLTagListView *)tagListView didUpdateContentHeight:(CGFloat)height {
