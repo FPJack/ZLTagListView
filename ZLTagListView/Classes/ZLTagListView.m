@@ -84,8 +84,11 @@
 //    }
 }
 
+//- (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
+//    return YES;
+//}
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
-    return YES;
+    return newBounds.size.width != self.collectionView.bounds.size.width;
 }
 - (BOOL)flipsHorizontallyInOppositeLayoutDirection {
     return  [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:UIView.appearance.semanticContentAttribute] == UIUserInterfaceLayoutDirectionRightToLeft;
@@ -95,6 +98,9 @@
 @interface ZLTagCell : UICollectionViewCell
 @end
 @implementation ZLTagCell
+- (void)setHidden:(BOOL)hidden {
+    [super setHidden:hidden];
+}
 @end
 
 
@@ -417,7 +423,9 @@
     UIView *view = self.viewCache[indexKey];
     if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:dequeueView:forTagAtIndex:)]) {
         view = [_dataSource tagListView:self dequeueView:view forTagAtIndex:indexPath.item];
+        [view removeFromSuperview];
         [view invalidateIntrinsicContentSize];
+        
         if (![cell.contentView.subviews.firstObject isEqual:view]) {
             [cell.contentView.subviews.firstObject removeFromSuperview];
             [cell.contentView addSubview:view];
@@ -447,6 +455,21 @@
     if (cachedSize) self.sizeCache[@(index)] = cachedSize;
     return size;
 }
+//- (CGSize)tagListView:(ZLTagListView *)tagListView sizeForTagAtIndex:(NSInteger)index {
+//    NSValue *cached = self.sizeCache[@(index)];
+//    if (cached) return cached.CGSizeValue;
+//
+//    // 用一个专门的测量 view，不写 viewCache
+//    UIView *view = nil;
+//    if (_dataSource && [_dataSource respondsToSelector:@selector(tagListView:dequeueView:forTagAtIndex:)]) {
+//        view = [_dataSource tagListView:self dequeueView:nil forTagAtIndex:index];
+//    }
+//    CGSize size = view ? [view systemLayoutSizeFittingSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)
+//                          withHorizontalFittingPriority:UILayoutPriorityFittingSizeLevel
+//                                verticalFittingPriority:UILayoutPriorityFittingSizeLevel] : CGSizeZero;
+//    self.sizeCache[@(index)] = [NSValue valueWithCGSize:size];
+//    return size;
+//}
 
 
 #pragma mark - UICollectionViewDelegate
