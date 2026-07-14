@@ -83,12 +83,8 @@
         }
 //    }
 }
-
-//- (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
-//    return YES;
-//}
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
-    return newBounds.size.width != self.collectionView.bounds.size.width;
+    return !CGSizeEqualToSize(self.collectionView.bounds.size, newBounds.size) ;
 }
 - (BOOL)flipsHorizontallyInOppositeLayoutDirection {
     return  [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:UIView.appearance.semanticContentAttribute] == UIUserInterfaceLayoutDirectionRightToLeft;
