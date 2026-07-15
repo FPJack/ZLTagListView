@@ -2,16 +2,17 @@
 
 @class ZLTagListView;
 NS_ASSUME_NONNULL_BEGIN
-typedef NS_ENUM(NSInteger, ZLTagAlignment) {
-    ZLTagAlignmentStart,
-    ZLTagAlignmentCenter,
-    ZLTagAlignmentEnd
+/// 行内水平对齐方式
+typedef NS_ENUM(NSInteger, ZLTagRowHorizontalAlignment) {
+    ZLTagRowHorizontalAlignmentStart,   // 起始对齐（默认，RTL 时为右）
+    ZLTagRowHorizontalAlignmentCenter,  // 居中对齐
+    ZLTagRowHorizontalAlignmentEnd      // 结束对齐
 };
 /// 行内垂直对齐方式（针对同一行中不同高度的标签）
-typedef NS_ENUM(NSInteger, ZLTagVerticalAlignment) {
-    ZLTagVerticalAlignmentTop,     // 顶部对齐
-    ZLTagVerticalAlignmentCenter,  // 居中对齐（默认）
-    ZLTagVerticalAlignmentBottom   // 底部对齐
+typedef NS_ENUM(NSInteger, ZLTagRowVerticalAlignment) {
+    ZLTagRowVerticalAlignmentTop,       // 顶部对齐
+    ZLTagRowVerticalAlignmentCenter,    // 居中对齐（默认）
+    ZLTagRowVerticalAlignmentBottom     // 底部对齐
 };
 /// 整体内容在容器内的垂直对齐方式（当容器高度大于内容高度时生效，例如设置了 minHeight）
 typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
@@ -43,9 +44,10 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 
 @interface ZLTagFlowLayout : UICollectionViewFlowLayout
 
-@property (nonatomic, assign) ZLTagAlignment alignment;
+/// 行内水平对齐方式
+@property (nonatomic, assign) ZLTagRowHorizontalAlignment rowHorizontalAlignment;
 /// 行内垂直对齐方式
-@property (nonatomic, assign) ZLTagVerticalAlignment verticalAlignment;
+@property (nonatomic, assign) ZLTagRowVerticalAlignment rowVerticalAlignment;
 /// 内容整体垂直对齐方式
 @property (nonatomic, assign) ZLTagContentVerticalAlignment contentVerticalAlignment;
 /// 是否RTL布局
@@ -66,10 +68,10 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 @property (nonatomic, assign) CGFloat minWidth;
 /// 最小高度，默认0
 @property (nonatomic, assign) CGFloat minHeight;
-/// 对齐方式，默认左对齐
-@property (nonatomic, assign) ZLTagAlignment alignment;
+/// 行内水平对齐方式，默认起始对齐
+@property (nonatomic, assign) ZLTagRowHorizontalAlignment rowHorizontalAlignment;
 /// 行内垂直对齐方式，默认居中对齐
-@property (nonatomic, assign) ZLTagVerticalAlignment verticalAlignment;
+@property (nonatomic, assign) ZLTagRowVerticalAlignment rowVerticalAlignment;
 /// 内容整体垂直对齐方式，默认顶部（当容器高度大于内容高度时生效，例如设置了 minHeight）
 @property (nonatomic, assign) ZLTagContentVerticalAlignment contentVerticalAlignment;
 /// 行间距，默认10

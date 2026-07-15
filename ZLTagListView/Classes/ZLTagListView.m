@@ -116,15 +116,15 @@
     totalWidth += (row.count - 1) * self.minimumInteritemSpacing;
     
     CGFloat offset = 0;
-    ZLTagAlignment effectiveAlignment = self.alignment;
+    ZLTagRowHorizontalAlignment effectiveAlignment = self.rowHorizontalAlignment;
     switch (effectiveAlignment) {
-        case ZLTagAlignmentStart:
+        case ZLTagRowHorizontalAlignmentStart:
             offset = 0;
             break;
-        case ZLTagAlignmentCenter:
+        case ZLTagRowHorizontalAlignmentCenter:
             offset = (collectionViewWidth - totalWidth) / 2.0;
             break;
-        case ZLTagAlignmentEnd:
+        case ZLTagRowHorizontalAlignmentEnd:
             offset = collectionViewWidth - totalWidth;
             break;
     }
@@ -141,14 +141,14 @@
         CGRect frame = attr.frame;
         frame.origin.x = currentX;
         // 行内垂直对齐
-        switch (self.verticalAlignment) {
-            case ZLTagVerticalAlignmentTop:
+        switch (self.rowVerticalAlignment) {
+            case ZLTagRowVerticalAlignmentTop:
                 frame.origin.y = rowTop;
                 break;
-            case ZLTagVerticalAlignmentCenter:
+            case ZLTagRowVerticalAlignmentCenter:
                 frame.origin.y = rowTop + (maxRowHeight - frame.size.height) / 2.0;
                 break;
-            case ZLTagVerticalAlignmentBottom:
+            case ZLTagRowVerticalAlignmentBottom:
                 frame.origin.y = rowTop + (maxRowHeight - frame.size.height);
                 break;
         }
@@ -207,8 +207,8 @@
 - (void)setupDefaults {
     self.viewCache = [NSMutableDictionary dictionary];
     self.sizeCache = [NSMutableDictionary dictionary];
-    _alignment = ZLTagAlignmentStart;
-    _verticalAlignment = ZLTagVerticalAlignmentCenter;
+    _rowHorizontalAlignment = ZLTagRowHorizontalAlignmentStart;
+    _rowVerticalAlignment = ZLTagRowVerticalAlignmentCenter;
     _contentVerticalAlignment = ZLTagContentVerticalAlignmentTop;
     _lineSpacing = 10;
     _itemSpacing = 10;
@@ -224,8 +224,8 @@
 
 - (void)setupCollectionView {
     _flowLayout = [[ZLTagFlowLayout alloc] init];
-    _flowLayout.alignment = _alignment;
-    _flowLayout.verticalAlignment = _verticalAlignment;
+    _flowLayout.rowHorizontalAlignment = _rowHorizontalAlignment;
+    _flowLayout.rowVerticalAlignment = _rowVerticalAlignment;
     _flowLayout.contentVerticalAlignment = _contentVerticalAlignment;
     _flowLayout.minimumLineSpacing = _lineSpacing;
     _flowLayout.minimumInteritemSpacing = _itemSpacing;
@@ -271,15 +271,15 @@
 
 #pragma mark - Setters
 
-- (void)setAlignment:(ZLTagAlignment)alignment {
-    _alignment = alignment;
-    _flowLayout.alignment = alignment;
+- (void)setRowHorizontalAlignment:(ZLTagRowHorizontalAlignment)alignment {
+    _rowHorizontalAlignment = alignment;
+    _flowLayout.rowHorizontalAlignment = alignment;
     [_flowLayout invalidateLayout];
 }
 
-- (void)setVerticalAlignment:(ZLTagVerticalAlignment)verticalAlignment {
-    _verticalAlignment = verticalAlignment;
-    _flowLayout.verticalAlignment = verticalAlignment;
+- (void)setRowVerticalAlignment:(ZLTagRowVerticalAlignment)verticalAlignment {
+    _rowVerticalAlignment = verticalAlignment;
+    _flowLayout.rowVerticalAlignment = verticalAlignment;
     [_flowLayout invalidateLayout];
 }
 

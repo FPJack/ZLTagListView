@@ -91,8 +91,8 @@
 - (void)setupTagListView {
     _tagListView = [[ZLTagListView alloc] init];
     _tagListView.dataSource = self;
-    _tagListView.alignment = ZLTagAlignmentStart;
-    _tagListView.verticalAlignment = ZLTagVerticalAlignmentCenter;
+    _tagListView.rowHorizontalAlignment = ZLTagRowHorizontalAlignmentStart;
+    _tagListView.rowVerticalAlignment = ZLTagRowVerticalAlignmentCenter;
     _tagListView.contentVerticalAlignment = ZLTagContentVerticalAlignmentTop;
     _tagListView.lineSpacing = 12;
     _tagListView.itemSpacing = 10;
@@ -116,17 +116,17 @@
 #pragma mark - Actions
 
 - (void)onHChanged {
-    ZLTagAlignment aligns[] = { ZLTagAlignmentStart, ZLTagAlignmentCenter, ZLTagAlignmentEnd };
-    _tagListView.alignment = aligns[_hSeg.selectedSegmentIndex];
+    ZLTagRowHorizontalAlignment aligns[] = { ZLTagRowHorizontalAlignmentStart, ZLTagRowHorizontalAlignmentCenter, ZLTagRowHorizontalAlignmentEnd };
+    _tagListView.rowHorizontalAlignment = aligns[_hSeg.selectedSegmentIndex];
 }
 
 - (void)onVChanged {
-    ZLTagVerticalAlignment aligns[] = {
-        ZLTagVerticalAlignmentTop,
-        ZLTagVerticalAlignmentCenter,
-        ZLTagVerticalAlignmentBottom
+    ZLTagRowVerticalAlignment aligns[] = {
+        ZLTagRowVerticalAlignmentTop,
+        ZLTagRowVerticalAlignmentCenter,
+        ZLTagRowVerticalAlignmentBottom
     };
-    _tagListView.verticalAlignment = aligns[_vSeg.selectedSegmentIndex];
+    _tagListView.rowVerticalAlignment = aligns[_vSeg.selectedSegmentIndex];
 }
 
 - (void)onCVChanged {
