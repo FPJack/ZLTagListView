@@ -262,10 +262,13 @@
     
     // 更新RTL状态
     _flowLayout.isRTL = [self isCurrentLayoutRTL];
-    
+    if (self.preSize.width != [self caculateWidth]) {
+        [self.sizeCache removeAllObjects];
+        [_flowLayout invalidateLayout];
+        [self invalidateIntrinsicContentSize];
+    }
     if (!CGRectEqualToRect(_collectionView.frame, self.bounds)) {
         _collectionView.frame = self.bounds;
-        [_flowLayout invalidateLayout];
     }
 }
 
@@ -360,6 +363,10 @@
 }
 
 - (CGSize)calculateContentSize {
+    CGFloat width = [self caculateWidth];
+    return [self calculateContentSizeWithWidth:width];
+}
+- (CGFloat)caculateWidth {
     CGFloat width = 0;
     if (_maxWidth == CGFLOAT_MAX && _maxHeight == CGFLOAT_MAX) {
         width = self.bounds.size.width;
@@ -370,10 +377,12 @@
     }else if (self.bounds.size.width > 0) {
         width = self.bounds.size.width;
     }
-    return [self calculateContentSizeWithWidth:width];
+    return width;
 }
-
 - (CGSize)calculateContentSizeWithWidth:(CGFloat)width {
+    if (width <= 0) {
+        return CGSizeZero;
+    }
     if (!_dataSource) return CGSizeMake(_minWidth, _minHeight);
 
     NSInteger count = [_dataSource numberOfTagsInTagListView:self];
@@ -429,6 +438,8 @@
                 maxLineWidth = MAX(maxLineWidth, currentLineWidth - _itemSpacing);
                 currentX = 0;
                 currentLineWidth = 0;
+                NSLog(@"lineHeight---%ld---%f",i,lineHeight);
+
                 currentY += lineHeight + _lineSpacing;
                 lineHeight = 0;
             }

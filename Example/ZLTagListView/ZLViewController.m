@@ -89,7 +89,7 @@
 }
 
 - (void)setupTagListView {
-    _tagListView = [[ZLTagListView alloc] init];
+    _tagListView = [[ZLTagListView alloc] initWithFrame:CGRectZero];
     _tagListView.dataSource = self;
     _tagListView.rowHorizontalAlignment = ZLTagRowHorizontalAlignmentStart;
     _tagListView.rowVerticalAlignment = ZLTagRowVerticalAlignmentCenter;
@@ -97,19 +97,22 @@
     _tagListView.lineSpacing = 12;
     _tagListView.itemSpacing = 10;
     _tagListView.contentInset = UIEdgeInsetsMake(12, 12, 12, 12);
-    _tagListView.minHeight = 320; // 让容器高于内容，便于观察整体垂直对齐
+//    _tagListView.minHeight = 320; // 让容器高于内容，便于观察整体垂直对齐
     _tagListView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1.0];
     _tagListView.layer.cornerRadius = 8;
     _tagListView.layer.borderWidth = 1;
     _tagListView.layer.borderColor = [UIColor colorWithWhite:0.85 alpha:1.0].CGColor;
     _tagListView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:_tagListView];
-    _tagListView.maxWidth = self.view.bounds.size.width - 32;
+    NSLog(@"self.view frame: %@", NSStringFromCGRect(self.view.frame));
+    _tagListView.maxWidth = self.view.bounds.size.width - 220;
 
     [NSLayoutConstraint activateConstraints:@[
-        [_tagListView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:16],
-        [_tagListView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-16],
+//        [_tagListView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:16],
+//        [_tagListView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-16],
         [_tagListView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor constant:40],
+        [_tagListView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor constant:0],
+
     ]];
 }
 
@@ -161,6 +164,7 @@
         label.layer.cornerRadius = 6;
         label.layer.masksToBounds = YES;
     }
+
     CGFloat fontSize = self.fontSizes[index].floatValue;
 //    fontSize = 15;
     label.font = [UIFont systemFontOfSize:fontSize];
