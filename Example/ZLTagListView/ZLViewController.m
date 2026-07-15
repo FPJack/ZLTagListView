@@ -25,9 +25,11 @@
     self.randomCount =  arc4random_uniform(_tags.count); // 生成5到14之间的随机数
     self.randomArr = _tags.mutableCopy;
     ZLTagListView *tagListView = [[ZLTagListView alloc] initWithFrame:self.view.bounds];
-    tagListView.maxWidth = 300;
+//    tagListView.maxWidth = self.view.bounds.size.width;
     tagListView.dataSource = self;
-    tagListView.alignment = ZLTagAlignmentEnd; // 左对齐
+//    tagListView.maxHeight = 100;
+//    tagListView.minHeight = 100;
+    tagListView.alignment = ZLTagAlignmentCenter; // 左对齐
     tagListView.translatesAutoresizingMaskIntoConstraints = NO;
     UIStackView *stackView = [[UIStackView alloc] initWithArrangedSubviews:@[tagListView]];
     stackView.backgroundColor = UIColor.orangeColor;
@@ -37,6 +39,8 @@
     [self.view addSubview:stackView];
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
     [stackView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor].active = YES;
+    [stackView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor].active = YES;
+    [stackView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor].active = YES;
     [stackView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor].active = YES;
 }
 - (ZLBlockTagListView *)setupBlockTagListView {

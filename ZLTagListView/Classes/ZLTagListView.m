@@ -271,7 +271,9 @@
 
 - (CGSize)calculateContentSize {
     CGFloat width = 0;
-    if (_maxWidth > 0) {
+    if (_maxWidth == CGFLOAT_MAX && _maxHeight == CGFLOAT_MAX) {
+        width = self.bounds.size.width;
+    }else if (_maxWidth > 0) {
         width = _maxWidth;
     }else if (_minWidth > 0) {
         width = _minWidth;
