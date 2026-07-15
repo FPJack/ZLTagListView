@@ -15,6 +15,7 @@
     NSMutableArray *attributes = [[NSMutableArray alloc] initWithArray:originalAttributes copyItems:YES];
 
     if (self.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
+        [self applyContentVerticalAlignment:attributes];
         return attributes;
     }
 
@@ -49,7 +50,56 @@
         [self alignRow:row];
     }
 
+    [self applyContentVerticalAlignment:attributes];
+
     return attributes;
+}
+
+/// 计算所有 cell 内容整体高度，并根据 contentVerticalAlignment 对所有 attributes 做统一垂直偏移
+/// 仅当容器可用高度 > 内容占用高度时生效（例如设置了 minHeight）
+- (void)applyContentVerticalAlignment:(NSArray<UICollectionViewLayoutAttributes *> *)attributes {
+    if (self.contentVerticalAlignment == ZLTagContentVerticalAlignmentTop) return;
+    if (attributes.count == 0) return;
+
+    CGFloat containerHeight = self.collectionView.bounds.size.height;
+    if (containerHeight <= 0) return;
+
+    // 计算内容实际占用范围（top ~ bottom）
+    CGFloat contentTop = CGFLOAT_MAX;
+    CGFloat contentBottom = -CGFLOAT_MAX;
+    BOOL hasCell = NO;
+    for (UICollectionViewLayoutAttributes *attr in attributes) {
+        if (attr.representedElementCategory != UICollectionElementCategoryCell) continue;
+        hasCell = YES;
+        contentTop = MIN(contentTop, CGRectGetMinY(attr.frame));
+        contentBottom = MAX(contentBottom, CGRectGetMaxY(attr.frame));
+    }
+    if (!hasCell) return;
+
+    // 使用 sectionInset 内的可用高度作为参考
+    CGFloat usableHeight = containerHeight - self.sectionInset.top - self.sectionInset.bottom;
+    CGFloat usedHeight = contentBottom - contentTop;
+    if (usedHeight >= usableHeight) return; // 容器装不下，无需偏移
+
+    CGFloat offset = 0;
+    switch (self.contentVerticalAlignment) {
+        case ZLTagContentVerticalAlignmentTop:
+            return;
+        case ZLTagContentVerticalAlignmentCenter:
+            offset = (usableHeight - usedHeight) / 2.0;
+            break;
+        case ZLTagContentVerticalAlignmentBottom:
+            offset = usableHeight - usedHeight;
+            break;
+    }
+    if (offset <= 0) return;
+
+    for (UICollectionViewLayoutAttributes *attr in attributes) {
+        if (attr.representedElementCategory != UICollectionElementCategoryCell) continue;
+        CGRect frame = attr.frame;
+        frame.origin.y += offset;
+        attr.frame = frame;
+    }
 }
 
 - (void)alignRow:(NSMutableArray<UICollectionViewLayoutAttributes *> *)row {
@@ -104,7 +154,6 @@
         }
         attr.frame = frame;
         currentX += frame.size.width + self.minimumInteritemSpacing;
-        NSLog(@"attr.frame: %@", NSStringFromCGRect(attr.frame));
     }
 }
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
@@ -160,6 +209,7 @@
     self.sizeCache = [NSMutableDictionary dictionary];
     _alignment = ZLTagAlignmentStart;
     _verticalAlignment = ZLTagVerticalAlignmentCenter;
+    _contentVerticalAlignment = ZLTagContentVerticalAlignmentTop;
     _lineSpacing = 10;
     _itemSpacing = 10;
     _contentInset = UIEdgeInsetsMake(10, 10, 10, 10);
@@ -176,6 +226,7 @@
     _flowLayout = [[ZLTagFlowLayout alloc] init];
     _flowLayout.alignment = _alignment;
     _flowLayout.verticalAlignment = _verticalAlignment;
+    _flowLayout.contentVerticalAlignment = _contentVerticalAlignment;
     _flowLayout.minimumLineSpacing = _lineSpacing;
     _flowLayout.minimumInteritemSpacing = _itemSpacing;
     _flowLayout.sectionInset = _contentInset;
@@ -229,6 +280,12 @@
 - (void)setVerticalAlignment:(ZLTagVerticalAlignment)verticalAlignment {
     _verticalAlignment = verticalAlignment;
     _flowLayout.verticalAlignment = verticalAlignment;
+    [_flowLayout invalidateLayout];
+}
+
+- (void)setContentVerticalAlignment:(ZLTagContentVerticalAlignment)contentVerticalAlignment {
+    _contentVerticalAlignment = contentVerticalAlignment;
+    _flowLayout.contentVerticalAlignment = contentVerticalAlignment;
     [_flowLayout invalidateLayout];
 }
 
@@ -304,10 +361,9 @@
 
 - (CGSize)calculateContentSize {
     CGFloat width = 0;
-//    if (_maxWidth == CGFLOAT_MAX && _maxHeight == CGFLOAT_MAX) {
-//        width = self.bounds.size.width;
-//    }else
-        if (_maxWidth > 0) {
+    if (_maxWidth == CGFLOAT_MAX && _maxHeight == CGFLOAT_MAX) {
+        width = self.bounds.size.width;
+    }else if (_maxWidth > 0) {
         width = _maxWidth;
     }else if (_minWidth > 0) {
         width = _minWidth;

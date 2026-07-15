@@ -13,6 +13,12 @@ typedef NS_ENUM(NSInteger, ZLTagVerticalAlignment) {
     ZLTagVerticalAlignmentCenter,  // 居中对齐（默认）
     ZLTagVerticalAlignmentBottom   // 底部对齐
 };
+/// 整体内容在容器内的垂直对齐方式（当容器高度大于内容高度时生效，例如设置了 minHeight）
+typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
+    ZLTagContentVerticalAlignmentTop,     // 顶部（默认）
+    ZLTagContentVerticalAlignmentCenter,  // 整体居中
+    ZLTagContentVerticalAlignmentBottom   // 底部
+};
 @protocol ZLTagListViewDataSource <NSObject>
 @required
 - (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView;
@@ -40,6 +46,8 @@ typedef NS_ENUM(NSInteger, ZLTagVerticalAlignment) {
 @property (nonatomic, assign) ZLTagAlignment alignment;
 /// 行内垂直对齐方式
 @property (nonatomic, assign) ZLTagVerticalAlignment verticalAlignment;
+/// 内容整体垂直对齐方式
+@property (nonatomic, assign) ZLTagContentVerticalAlignment contentVerticalAlignment;
 /// 是否RTL布局
 @property (nonatomic, assign) BOOL isRTL;
 @end
@@ -62,6 +70,8 @@ typedef NS_ENUM(NSInteger, ZLTagVerticalAlignment) {
 @property (nonatomic, assign) ZLTagAlignment alignment;
 /// 行内垂直对齐方式，默认居中对齐
 @property (nonatomic, assign) ZLTagVerticalAlignment verticalAlignment;
+/// 内容整体垂直对齐方式，默认顶部（当容器高度大于内容高度时生效，例如设置了 minHeight）
+@property (nonatomic, assign) ZLTagContentVerticalAlignment contentVerticalAlignment;
 /// 行间距，默认10
 @property (nonatomic, assign) CGFloat lineSpacing;
 /// 列间距，默认10

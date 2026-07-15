@@ -13,6 +13,7 @@
 @property (nonatomic, strong) NSMutableArray<NSNumber *> *fontSizes;
 @property (nonatomic, strong) UISegmentedControl *hSeg;
 @property (nonatomic, strong) UISegmentedControl *vSeg;
+@property (nonatomic, strong) UISegmentedControl *cvSeg;
 @end
 
 @implementation ZLViewController
@@ -26,7 +27,7 @@
               @"iOS", @"UIKit", @"SwiftUI",
               @"Xcode", @"Auto Layout",
               @"Runtime", @"KVO", @"Block",
-              @"GCD", @"CoreData", @"Metal", 
+              @"GCD", @"CoreData", @"Metal",
               @"CALayer", @"Combine"
     ];
 
@@ -50,15 +51,20 @@
     _vSeg.selectedSegmentIndex = 1;
     [_vSeg addTarget:self action:@selector(onVChanged) forControlEvents:UIControlEventValueChanged];
 
+    _cvSeg = [[UISegmentedControl alloc] initWithItems:@[@"Top", @"Center", @"Bottom"]];
+    _cvSeg.selectedSegmentIndex = 0;
+    [_cvSeg addTarget:self action:@selector(onCVChanged) forControlEvents:UIControlEventValueChanged];
+
     UILabel *tip = [UILabel new];
     tip.font = [UIFont systemFontOfSize:12];
     tip.textColor = [UIColor darkGrayColor];
     tip.numberOfLines = 0;
-    tip.text = @"点击任意标签可随机刷新字体大小，观察不同高度下的对齐效果";
+    tip.text = @"点击任意标签可随机刷新字体大小；容器已设置 minHeight=320，可观察整体垂直对齐效果";
 
     UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[
         [self makeTitleLabel:@"水平对齐 alignment"], _hSeg,
-        [self makeTitleLabel:@"垂直对齐 verticalAlignment"], _vSeg,
+        [self makeTitleLabel:@"行内垂直对齐 verticalAlignment"], _vSeg,
+        [self makeTitleLabel:@"整体垂直对齐 contentVerticalAlignment"], _cvSeg,
         tip
     ]];
     stack.axis = UILayoutConstraintAxisVertical;
@@ -87,9 +93,11 @@
     _tagListView.dataSource = self;
     _tagListView.alignment = ZLTagAlignmentStart;
     _tagListView.verticalAlignment = ZLTagVerticalAlignmentCenter;
+    _tagListView.contentVerticalAlignment = ZLTagContentVerticalAlignmentTop;
     _tagListView.lineSpacing = 12;
     _tagListView.itemSpacing = 10;
     _tagListView.contentInset = UIEdgeInsetsMake(12, 12, 12, 12);
+    _tagListView.minHeight = 320; // 让容器高于内容，便于观察整体垂直对齐
     _tagListView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1.0];
     _tagListView.layer.cornerRadius = 8;
     _tagListView.layer.borderWidth = 1;
@@ -119,6 +127,15 @@
         ZLTagVerticalAlignmentBottom
     };
     _tagListView.verticalAlignment = aligns[_vSeg.selectedSegmentIndex];
+}
+
+- (void)onCVChanged {
+    ZLTagContentVerticalAlignment aligns[] = {
+        ZLTagContentVerticalAlignmentTop,
+        ZLTagContentVerticalAlignmentCenter,
+        ZLTagContentVerticalAlignmentBottom
+    };
+    _tagListView.contentVerticalAlignment = aligns[_cvSeg.selectedSegmentIndex];
 }
 
 - (void)randomizeFontSizes {
