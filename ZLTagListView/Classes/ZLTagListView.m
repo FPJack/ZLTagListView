@@ -13,38 +13,55 @@
 - (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
     NSArray *originalAttributes = [super layoutAttributesForElementsInRect:rect];
     NSMutableArray *attributes = [[NSMutableArray alloc] initWithArray:originalAttributes copyItems:YES];
+
     if (self.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
         return attributes;
     }
+
     NSMutableArray<NSMutableArray<UICollectionViewLayoutAttributes *> *> *rows = [NSMutableArray array];
-    CGFloat currentY = -CGFLOAT_MAX;
-    
+    NSMutableArray<UICollectionViewLayoutAttributes *> *currentRow = nil;
+    UICollectionViewLayoutAttributes *lastAttr = nil;
+
     for (UICollectionViewLayoutAttributes *attr in attributes) {
-        if (attr.representedElementCategory != UICollectionElementCategoryCell) continue;
-        
-        if (attr.frame.origin.y >= currentY + 1) {
-            [rows addObject:[NSMutableArray array]];
-            currentY = attr.frame.origin.y;
+
+        if (attr.representedElementCategory != UICollectionElementCategoryCell) {
+            continue;
         }
-        [rows.lastObject addObject:attr];
+
+        if (lastAttr == nil) {
+            currentRow = [NSMutableArray array];
+            [rows addObject:currentRow];
+        } else {
+            // 判断是否与上一行最后一个 Cell 在 Y 方向重叠
+            BOOL isSameRow = CGRectGetMinY(attr.frame) < CGRectGetMaxY(lastAttr.frame);
+
+            if (!isSameRow) {
+                currentRow = [NSMutableArray array];
+                [rows addObject:currentRow];
+            }
+        }
+
+        [currentRow addObject:attr];
+        lastAttr = attr;
     }
-    
+
     for (NSMutableArray<UICollectionViewLayoutAttributes *> *row in rows) {
         [self alignRow:row];
     }
-    
+
     return attributes;
 }
-
 
 - (void)alignRow:(NSMutableArray<UICollectionViewLayoutAttributes *> *)row {
     if (row.count == 0) return;
     
     CGFloat collectionViewWidth = self.collectionView.bounds.size.width - self.sectionInset.left - self.sectionInset.right;
     CGFloat totalWidth = 0;
+    CGFloat maxRowHeight = 0;
     
     for (UICollectionViewLayoutAttributes *attr in row) {
         totalWidth += attr.frame.size.width;
+        maxRowHeight = MAX(maxRowHeight, attr.frame.size.height);
     }
     totalWidth += (row.count - 1) * self.minimumInteritemSpacing;
     
@@ -62,28 +79,36 @@
             break;
     }
     
-//    if (self.isRTL) {
-//        // RTL: 从右向左排列
-//        CGFloat currentX = self.collectionView.bounds.size.width - self.sectionInset.right - offset;
-//        for (UICollectionViewLayoutAttributes *attr in row) {
-//            CGRect frame = attr.frame;
-//            currentX -= frame.size.width;
-//            frame.origin.x = currentX;
-//            attr.frame = frame;
-//            currentX -= self.minimumInteritemSpacing;
-//        }
-//    } else {
-        // LTR: 从左向右排列
-        CGFloat currentX = self.sectionInset.left + offset;
-        for (UICollectionViewLayoutAttributes *attr in row) {
-            CGRect frame = attr.frame;
-            frame.origin.x = currentX;
-            attr.frame = frame;
-            currentX += frame.size.width + self.minimumInteritemSpacing;
+    // 行基准 y（该行最顶部的 y）
+    CGFloat rowTop = CGFLOAT_MAX;
+    for (UICollectionViewLayoutAttributes *attr in row) {
+        rowTop = MIN(rowTop, attr.frame.origin.y);
+    }
+    
+    // LTR: 从左向右排列
+    CGFloat currentX = self.sectionInset.left + offset;
+    for (UICollectionViewLayoutAttributes *attr in row) {
+        CGRect frame = attr.frame;
+        frame.origin.x = currentX;
+        // 行内垂直对齐
+        switch (self.verticalAlignment) {
+            case ZLTagVerticalAlignmentTop:
+                frame.origin.y = rowTop;
+                break;
+            case ZLTagVerticalAlignmentCenter:
+                frame.origin.y = rowTop + (maxRowHeight - frame.size.height) / 2.0;
+                break;
+            case ZLTagVerticalAlignmentBottom:
+                frame.origin.y = rowTop + (maxRowHeight - frame.size.height);
+                break;
         }
-//    }
+        attr.frame = frame;
+        currentX += frame.size.width + self.minimumInteritemSpacing;
+        NSLog(@"attr.frame: %@", NSStringFromCGRect(attr.frame));
+    }
 }
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
+    return YES;
     return !CGSizeEqualToSize(self.collectionView.bounds.size, newBounds.size) ;
 }
 - (BOOL)flipsHorizontallyInOppositeLayoutDirection {
@@ -134,6 +159,7 @@
     self.viewCache = [NSMutableDictionary dictionary];
     self.sizeCache = [NSMutableDictionary dictionary];
     _alignment = ZLTagAlignmentStart;
+    _verticalAlignment = ZLTagVerticalAlignmentCenter;
     _lineSpacing = 10;
     _itemSpacing = 10;
     _contentInset = UIEdgeInsetsMake(10, 10, 10, 10);
@@ -149,6 +175,7 @@
 - (void)setupCollectionView {
     _flowLayout = [[ZLTagFlowLayout alloc] init];
     _flowLayout.alignment = _alignment;
+    _flowLayout.verticalAlignment = _verticalAlignment;
     _flowLayout.minimumLineSpacing = _lineSpacing;
     _flowLayout.minimumInteritemSpacing = _itemSpacing;
     _flowLayout.sectionInset = _contentInset;
@@ -196,6 +223,12 @@
 - (void)setAlignment:(ZLTagAlignment)alignment {
     _alignment = alignment;
     _flowLayout.alignment = alignment;
+    [_flowLayout invalidateLayout];
+}
+
+- (void)setVerticalAlignment:(ZLTagVerticalAlignment)verticalAlignment {
+    _verticalAlignment = verticalAlignment;
+    _flowLayout.verticalAlignment = verticalAlignment;
     [_flowLayout invalidateLayout];
 }
 
@@ -271,9 +304,10 @@
 
 - (CGSize)calculateContentSize {
     CGFloat width = 0;
-    if (_maxWidth == CGFLOAT_MAX && _maxHeight == CGFLOAT_MAX) {
-        width = self.bounds.size.width;
-    }else if (_maxWidth > 0) {
+//    if (_maxWidth == CGFLOAT_MAX && _maxHeight == CGFLOAT_MAX) {
+//        width = self.bounds.size.width;
+//    }else
+        if (_maxWidth > 0) {
         width = _maxWidth;
     }else if (_minWidth > 0) {
         width = _minWidth;

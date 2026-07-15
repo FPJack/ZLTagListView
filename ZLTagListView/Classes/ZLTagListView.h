@@ -7,6 +7,12 @@ typedef NS_ENUM(NSInteger, ZLTagAlignment) {
     ZLTagAlignmentCenter,
     ZLTagAlignmentEnd
 };
+/// 行内垂直对齐方式（针对同一行中不同高度的标签）
+typedef NS_ENUM(NSInteger, ZLTagVerticalAlignment) {
+    ZLTagVerticalAlignmentTop,     // 顶部对齐
+    ZLTagVerticalAlignmentCenter,  // 居中对齐（默认）
+    ZLTagVerticalAlignmentBottom   // 底部对齐
+};
 @protocol ZLTagListViewDataSource <NSObject>
 @required
 - (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView;
@@ -32,6 +38,8 @@ typedef NS_ENUM(NSInteger, ZLTagAlignment) {
 @interface ZLTagFlowLayout : UICollectionViewFlowLayout
 
 @property (nonatomic, assign) ZLTagAlignment alignment;
+/// 行内垂直对齐方式
+@property (nonatomic, assign) ZLTagVerticalAlignment verticalAlignment;
 /// 是否RTL布局
 @property (nonatomic, assign) BOOL isRTL;
 @end
@@ -52,6 +60,8 @@ typedef NS_ENUM(NSInteger, ZLTagAlignment) {
 @property (nonatomic, assign) CGFloat minHeight;
 /// 对齐方式，默认左对齐
 @property (nonatomic, assign) ZLTagAlignment alignment;
+/// 行内垂直对齐方式，默认居中对齐
+@property (nonatomic, assign) ZLTagVerticalAlignment verticalAlignment;
 /// 行间距，默认10
 @property (nonatomic, assign) CGFloat lineSpacing;
 /// 列间距，默认10
