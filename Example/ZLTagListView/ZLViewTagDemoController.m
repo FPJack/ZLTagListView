@@ -101,6 +101,7 @@
     NSString *title = [NSString stringWithFormat:@"Tag %ld", (long)self.counter];
     
     [self.tagListView addView:[self makeTagWithTitle:title]];
+    [self.tagListView setMargin:UIEdgeInsetsMake(5, 5, 5, 5) atIndex:self.tagListView.tagViews.count - 1];
 }
 
 - (void)onRemoveLast {

@@ -114,7 +114,6 @@
         maxRowHeight = MAX(maxRowHeight, attr.frame.size.height);
     }
     totalWidth += (row.count - 1) * self.minimumInteritemSpacing;
-    
     CGFloat offset = 0;
     ZLTagRowHorizontalAlignment effectiveAlignment = self.rowHorizontalAlignment;
     switch (effectiveAlignment) {
@@ -166,10 +165,26 @@
 @end
 
 @interface ZLTagCell : UICollectionViewCell
+@property (nonatomic,assign)UIEdgeInsets insets;
+@property (nonatomic,weak)UIView *tagView;
 @end
 @implementation ZLTagCell
-- (void)setHidden:(BOOL)hidden {
-    [super setHidden:hidden];
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+    UIView *view = self.subviews.firstObject;
+    /// 如果点击在 cell 内，但不在 view 内，则返回 nil，避免 cell 拦截点击事件
+    if ( view && !CGRectContainsPoint(view.frame, point)) {
+        return nil;
+    }
+    return  [super hitTest:point withEvent:event];
+}
+- (void)setTagView:(UIView *)tagView {
+    [self.subviews.firstObject removeFromSuperview];
+    [self addSubview:tagView];
+    _tagView = tagView;
+}
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    _tagView.frame = UIEdgeInsetsInsetRect(self.bounds, _insets);
 }
 @end
 
@@ -589,18 +604,20 @@
         [view invalidateIntrinsicContentSize];
         
         UIEdgeInsets cellInsets = UIEdgeInsetsZero;
-        if ([_dataSource respondsToSelector:@selector(tagListView:insetsForTagAtIndex:)]) {
-            cellInsets = [_dataSource tagListView:self insetsForTagAtIndex:indexPath.item];
+        if ([_dataSource respondsToSelector:@selector(tagListView:marginForTagAtIndex:)]) {
+            cellInsets = [_dataSource tagListView:self marginForTagAtIndex:indexPath.item];
         }
         
-        if (![cell.contentView.subviews.firstObject isEqual:view]) {
-            [cell.contentView.subviews.firstObject removeFromSuperview];
-            [cell.contentView addSubview:view];
-            view.translatesAutoresizingMaskIntoConstraints = NO;
-            [view.topAnchor constraintEqualToAnchor:cell.contentView.topAnchor constant:cellInsets.top].active = YES;
-            [view.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor constant:-cellInsets.bottom].active = YES;
-            [view.leadingAnchor constraintEqualToAnchor:cell.contentView.leadingAnchor constant:cellInsets.left].active = YES;
-            [view.trailingAnchor constraintEqualToAnchor:cell.contentView.trailingAnchor constant:-cellInsets.right].active = YES;
+        if (![cell.subviews.firstObject isEqual:view]) {
+//            [cell.contentView.subviews.firstObject removeFromSuperview];
+            cell.insets = cellInsets;
+            cell.tagView = view;
+//            [cell.contentView addSubview:view];
+//            view.translatesAutoresizingMaskIntoConstraints = NO;
+//            [view.topAnchor constraintEqualToAnchor:cell.contentView.topAnchor constant:cellInsets.top].active = YES;
+//            [view.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor constant:-cellInsets.bottom].active = YES;
+//            [view.leadingAnchor constraintEqualToAnchor:cell.contentView.leadingAnchor constant:cellInsets.left].active = YES;
+//            [view.trailingAnchor constraintEqualToAnchor:cell.contentView.trailingAnchor constant:-cellInsets.right].active = YES;
         }
         self.viewCache[indexKey] = view;
     }
@@ -621,8 +638,8 @@
     [view layoutIfNeeded];
     CGSize size = view ? [view systemLayoutSizeFittingSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) withHorizontalFittingPriority:UILayoutPriorityFittingSizeLevel verticalFittingPriority:UILayoutPriorityFittingSizeLevel] : CGSizeZero;
     UIEdgeInsets insets = UIEdgeInsetsZero;
-    if ([_dataSource respondsToSelector:@selector(tagListView:insetsForTagAtIndex:)]) {
-        insets = [_dataSource tagListView:self insetsForTagAtIndex:index];
+    if ([_dataSource respondsToSelector:@selector(tagListView:marginForTagAtIndex:)]) {
+        insets = [_dataSource tagListView:self marginForTagAtIndex:index];
     }
     
     
@@ -718,6 +735,7 @@
 
 @interface ZLViewTagListView ()
 @property (nonatomic, strong) NSMutableArray<UIView *> *mutableTagViews;
+@property (nonatomic,strong)NSMutableDictionary<NSNumber *,NSValue *> *marginCache;
 @end
 
 @implementation ZLViewTagListView
@@ -740,6 +758,7 @@
 
 - (void)setupViewTagList {
     _mutableTagViews = [NSMutableArray array];
+    _marginCache = [NSMutableDictionary dictionary];
     self.dataSource = self;
 }
 
@@ -781,8 +800,7 @@
     if (!view) return;
     NSUInteger idx = [self.mutableTagViews indexOfObject:view];
     if (idx == NSNotFound) return;
-    [self.mutableTagViews removeObjectAtIndex:idx];
-    [self reloadData];
+    [self removeViewAtIndex:idx];
 }
 
 - (void)removeViewAtIndex:(NSInteger)index {
@@ -795,7 +813,10 @@
     [self.mutableTagViews removeAllObjects];
     [self reloadData];
 }
-
+- (void)setMargin:(UIEdgeInsets)margin atIndex:(NSInteger )index{
+   self.marginCache[@(index)] = [NSValue valueWithUIEdgeInsets:margin];
+   [self reloadData];
+}
 #pragma mark - ZLTagListViewDataSource
 
 - (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView {
@@ -816,5 +837,7 @@
         self.didSelectTag(self, self.mutableTagViews[index], index);
     }
 }
-
+- (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView marginForTagAtIndex:(NSInteger)index {
+    return [self.marginCache[@(index)] UIEdgeInsetsValue];
+}
 @end

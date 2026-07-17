@@ -37,9 +37,8 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 ///标签被选中
 - (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index;
 
-/// 返回指定索引的标签视图的内边距（可选）
-- (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView insetsForTagAtIndex:(NSInteger)index;
-
+/// 返回指定索引的标签视图的外边距（可选）
+- (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView marginForTagAtIndex:(NSInteger)index;
 
 ///高度发生变化
 - (void)tagListView:(ZLTagListView *)tagListView didUpdateContentHeight:(CGFloat)height;
@@ -131,6 +130,9 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 - (void)removeViewAtIndex:(NSInteger)index;
 /// 移除所有标签视图，并自动刷新
 - (void)removeAllViews;
+
+///设置指定标签视图的外边距，并自动刷新
+- (void)setMargin:(UIEdgeInsets)margin atIndex:(NSInteger )index;
 
 @end
 

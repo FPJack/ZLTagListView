@@ -228,7 +228,7 @@
 - (void)tagListView:(ZLTagListView *)tagListView didUpdateContentWidth:(CGFloat)width {
     NSLog(@"内容宽度更新: %.2f", width);
 }
-- (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView insetsForTagAtIndex:(NSInteger)index {
+- (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView marginForTagAtIndex:(NSInteger)index {
     return UIEdgeInsetsMake(10, 10, 10, 10);
 }
 @end
