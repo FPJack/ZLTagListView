@@ -32,14 +32,19 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 - (UIView *)tagListView:(ZLTagListView *)tagListView
             dequeueView:(__kindof UIView * _Nullable)view
           forTagAtIndex:(NSInteger)index;
+
 @optional
 ///标签被选中
 - (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index;
+
+/// 返回指定索引的标签视图的内边距（可选）
+- (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView insetsForTagAtIndex:(NSInteger)index;
+
+
 ///高度发生变化
 - (void)tagListView:(ZLTagListView *)tagListView didUpdateContentHeight:(CGFloat)height;
 ///宽度发生变化
 - (void)tagListView:(ZLTagListView *)tagListView didUpdateContentWidth:(CGFloat)width;
-
 @end
 
 @interface ZLTagFlowLayout : UICollectionViewFlowLayout

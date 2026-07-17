@@ -588,14 +588,19 @@
         [view removeFromSuperview];
         [view invalidateIntrinsicContentSize];
         
+        UIEdgeInsets cellInsets = UIEdgeInsetsZero;
+        if ([_dataSource respondsToSelector:@selector(tagListView:insetsForTagAtIndex:)]) {
+            cellInsets = [_dataSource tagListView:self insetsForTagAtIndex:indexPath.item];
+        }
+        
         if (![cell.contentView.subviews.firstObject isEqual:view]) {
             [cell.contentView.subviews.firstObject removeFromSuperview];
             [cell.contentView addSubview:view];
             view.translatesAutoresizingMaskIntoConstraints = NO;
-            [view.topAnchor constraintEqualToAnchor:cell.contentView.topAnchor].active = YES;
-            [view.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor].active = YES;
-            [view.leadingAnchor constraintEqualToAnchor:cell.contentView.leadingAnchor].active = YES;
-            [view.trailingAnchor constraintEqualToAnchor:cell.contentView.trailingAnchor].active = YES;
+            [view.topAnchor constraintEqualToAnchor:cell.contentView.topAnchor constant:cellInsets.top].active = YES;
+            [view.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor constant:-cellInsets.bottom].active = YES;
+            [view.leadingAnchor constraintEqualToAnchor:cell.contentView.leadingAnchor constant:cellInsets.left].active = YES;
+            [view.trailingAnchor constraintEqualToAnchor:cell.contentView.trailingAnchor constant:-cellInsets.right].active = YES;
         }
         self.viewCache[indexKey] = view;
     }
@@ -615,7 +620,13 @@
     [view setNeedsLayout];
     [view layoutIfNeeded];
     CGSize size = view ? [view systemLayoutSizeFittingSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) withHorizontalFittingPriority:UILayoutPriorityFittingSizeLevel verticalFittingPriority:UILayoutPriorityFittingSizeLevel] : CGSizeZero;
-    size = CGSizeMake(ceil(size.width), ceil(size.height));
+    UIEdgeInsets insets = UIEdgeInsetsZero;
+    if ([_dataSource respondsToSelector:@selector(tagListView:insetsForTagAtIndex:)]) {
+        insets = [_dataSource tagListView:self insetsForTagAtIndex:index];
+    }
+    
+    
+    size = CGSizeMake(ceil(size.width + insets.left + insets.right), ceil(size.height + insets.top + insets.bottom));
 
     cachedSize = [NSValue valueWithCGSize:size];
     if (cachedSize) self.sizeCache[@(index)] = cachedSize;
