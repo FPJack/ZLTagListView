@@ -20,7 +20,7 @@
 - ✅ 实现 `intrinsicContentSize`，可在 `UIStackView` / Auto Layout 中自动撑开
 - ✅ 支持 RTL（阿拉伯语等从右到左布局），可自动检测或强制开启
 - ✅ 提供 `ZLBlockTagListView` 子类，支持 Block 回调方式
-- ✅ 提供 `ZLViewTagListView` 子类，直接以 `UIView` 增删标签，无需实现数据源
+- ✅ 提供 `ZLViewTagListView` 子类，直接以 `UIView` 增删标签（`addView:` / `removeView:` / `removeAllViews`），无需实现数据源
 - ✅ 提供内容尺寸预计算与同步刷新 API
 
 ---
@@ -198,6 +198,83 @@ tagListView.translatesAutoresizingMaskIntoConstraints = NO;
 
 ---
 
+## 方式三：ZLViewTagListView（直接以 UIView 管理标签）
+
+`ZLViewTagListView` 是内置子类，**无需实现数据源**，直接通过 `addView:` / `removeView:` / `removeAllViews` 等方法增删标签，内部会自动刷新布局。适合标签数量动态变化、每个标签就是一个现成 `UIView` 的场景。
+
+### 1. 创建与添加
+
+```objc
+ZLViewTagListView *tagListView = [[ZLViewTagListView alloc] initWithFrame:CGRectZero];
+tagListView.rowHorizontalAlignment = ZLTagRowHorizontalAlignmentStart;
+tagListView.lineSpacing  = 10;
+tagListView.itemSpacing  = 10;
+tagListView.contentInset = UIEdgeInsetsMake(12, 12, 12, 12);
+tagListView.autoReload   = YES;   // 标签视图尺寸变化时自动刷新
+tagListView.translatesAutoresizingMaskIntoConstraints = NO;
+[self.view addSubview:tagListView];
+
+// 逐个添加
+for (NSString *title in @[@"Swift", @"Objective-C", @"iOS", @"UIKit"]) {
+    UILabel *label = [UILabel new];
+    label.text = title;
+    label.textColor = UIColor.whiteColor;
+    label.backgroundColor = UIColor.systemBlueColor;
+    label.layer.cornerRadius = 6;
+    label.layer.masksToBounds = YES;
+    [tagListView addView:label];
+}
+```
+
+### 2. 增删标签
+
+```objc
+// 追加单个标签
+[tagListView addView:label];
+
+// 追加标签并指定外边距
+[tagListView addView:label margin:UIEdgeInsetsMake(5, 5, 5, 5)];
+
+// 批量追加
+[tagListView addViews:@[label1, label2, label3]];
+
+// 指定位置插入
+[tagListView insertView:label atIndex:0];
+[tagListView insertView:label margin:UIEdgeInsetsMake(5, 5, 5, 5) atIndex:0];
+
+// 移除指定视图
+[tagListView removeView:label];
+
+// 移除指定位置
+[tagListView removeViewAtIndex:tagListView.tagViews.count - 1];
+
+// 清空全部
+[tagListView removeAllViews];
+
+// 单独设置某个标签的外边距
+[tagListView setMargin:UIEdgeInsetsMake(5, 5, 5, 5) atIndex:0];
+```
+
+### 3. 点击回调
+
+```objc
+tagListView.didSelectTag = ^(ZLViewTagListView *list, __kindof UIView *view, NSInteger index) {
+    NSLog(@"点击第 %ld 个标签", (long)index);
+    [list removeView:view];   // 例如：点击即移除
+};
+```
+
+### 4. 读取当前标签
+
+```objc
+NSArray<__kindof UIView *> *views = tagListView.tagViews;   // 只读，当前所有标签视图
+NSInteger count = tagListView.tagViews.count;
+```
+
+> **提示**：`ZLViewTagListView` 内部已把自身设为数据源，因此**不要**再手动设置 `dataSource`。`ZLTagListView` 的对齐、间距、最大最小宽高、RTL 等能力它全部继承可用。
+
+---
+
 ## 📐 布局与尺寸
 
 ### 1. 自动布局（推荐）
@@ -362,6 +439,30 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 | `didSelectTag` | 点击回调 Block |
 | `didUpdateContentHeight` | 高度变化回调 Block |
 | `didUpdateContentWidth` | 宽度变化回调 Block |
+
+### ZLViewTagListView 属性
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `tagViews` | `NSArray<__kindof UIView *>`（只读） | `@[]` | 当前所有标签视图 |
+| `autoReload` | `BOOL` | `NO` | 标签视图尺寸变化时是否自动刷新 |
+| `didSelectTag` | `void(^)(ZLViewTagListView *, __kindof UIView *, NSInteger)` | `nil` | 标签点击回调 |
+
+### ZLViewTagListView 方法
+
+| 方法 | 说明 |
+| --- | --- |
+| `- (void)addView:` | 追加一个标签视图 |
+| `- (void)addView:margin:` | 追加标签视图并设置外边距 |
+| `- (void)addViews:` | 批量追加标签视图 |
+| `- (void)insertView:atIndex:` | 在指定位置插入标签视图 |
+| `- (void)insertView:margin:atIndex:` | 在指定位置插入标签视图并设置外边距 |
+| `- (void)removeView:` | 移除指定标签视图 |
+| `- (void)removeViewAtIndex:` | 移除指定位置的标签视图 |
+| `- (void)removeAllViews` | 移除所有标签视图 |
+| `- (void)setMargin:atIndex:` | 设置指定位置标签视图的外边距 |
+
+> 以上增删方法内部都会自动刷新布局并更新 `intrinsicContentSize`。
 
 ---
 
