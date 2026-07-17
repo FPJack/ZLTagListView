@@ -141,7 +141,7 @@
     _tagListView.minHeight = 230;
     [NSLayoutConstraint activateConstraints:@[
 
-        [_tagListView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor constant:40],
+        [_tagListView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor constant:150],
         [_tagListView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor constant:0],
 
     ]];
