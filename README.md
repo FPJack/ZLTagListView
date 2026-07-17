@@ -15,10 +15,12 @@
   - 内容整体垂直对齐：`Top` / `Center` / `Bottom`（容器高度大于内容高度时生效）
 - ✅ 支持垂直换行布局 & 水平滚动模式
 - ✅ 支持自定义标签视图（返回任意 `UIView`）
+- ✅ 支持为每个标签单独设置外边距（`margin`）
 - ✅ 支持设置最大 / 最小宽高，内容在范围内自适应
 - ✅ 实现 `intrinsicContentSize`，可在 `UIStackView` / Auto Layout 中自动撑开
 - ✅ 支持 RTL（阿拉伯语等从右到左布局），可自动检测或强制开启
 - ✅ 提供 `ZLBlockTagListView` 子类，支持 Block 回调方式
+- ✅ 提供 `ZLViewTagListView` 子类，直接以 `UIView` 增删标签，无需实现数据源
 - ✅ 提供内容尺寸预计算与同步刷新 API
 
 ---
@@ -126,6 +128,11 @@ pod install
 // 标签点击
 - (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index {
     NSLog(@"选中: %@", self.tags[index]);
+}
+
+// 为指定标签设置外边距（标签四周的透明间隙）
+- (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView marginForTagAtIndex:(NSInteger)index {
+    return UIEdgeInsetsMake(4, 4, 4, 4);
 }
 
 // 内容高度变化（换行、数据变化后触发）
