@@ -120,6 +120,9 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 /// 通过 addView: / removeView: / removeAllViews 增删标签，内部自动刷新
 @interface ZLViewTagListView : ZLTagListView <ZLTagListViewDataSource>
 
+///tagView 尺寸变化的时候是否自动刷新
+@property (nonatomic, assign) BOOL autoReload;
+
 /// 当前所有标签视图（只读）
 @property (nonatomic, copy, readonly) NSArray<__kindof UIView *> *tagViews;
 /// 标签被选中回调（可选）

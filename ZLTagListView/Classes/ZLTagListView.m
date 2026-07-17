@@ -1,4 +1,99 @@
 #import "ZLTagListView.h"
+#import <objc/runtime.h>
+typedef void(^ZLBoundsDidChangeBlock)(UIView *view, CGRect oldBounds, CGRect newBounds);
+@interface _ZLBoundsObserver : NSObject
+@property (nonatomic, weak) UIView *view;
+@property (nonatomic, copy) ZLBoundsDidChangeBlock block;
+@property (nonatomic,assign)BOOL isFirst;
+@end
+
+@implementation _ZLBoundsObserver
+- (instancetype)initWithView:(UIView *)view {
+    if (self = [super init]) {
+        _view = view;
+        self.isFirst = YES;
+        [view addObserver:self
+               forKeyPath:@"bounds"
+                  options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+                  context:nil];
+    }
+    return self;
+}
+
+- (void)dealloc {
+    @try {
+        [_view removeObserver:self forKeyPath:@"bounds"];
+    } @catch (__unused NSException *e) {
+        
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey,id> *)change
+                       context:(void *)context {
+
+    if (![keyPath isEqualToString:@"bounds"]) {
+        return;
+    }
+
+    if (!self.block) {
+        return;
+    }
+    
+    if (self.isFirst) {
+        self.isFirst = NO;
+        return;
+    }
+
+    CGRect oldBounds = [change[NSKeyValueChangeOldKey] CGRectValue];
+    CGRect newBounds = [change[NSKeyValueChangeNewKey] CGRectValue];
+
+    if (CGRectEqualToRect(oldBounds, newBounds)) {
+        return;
+    }
+
+    self.block((UIView *)object, oldBounds, newBounds);
+}
+
+@end
+
+@implementation UIView (BoundsObserver)
+
+static const void *kBoundsObserverKey = &kBoundsObserverKey;
+
+- (void)setZl_boundsDidChangeBlock:(ZLBoundsDidChangeBlock)block {
+
+    _ZLBoundsObserver *observer = objc_getAssociatedObject(self, kBoundsObserverKey);
+
+    if (!block) {
+        objc_setAssociatedObject(self,
+                                 kBoundsObserverKey,
+                                 nil,
+                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        return;
+    }
+
+    if (!observer) {
+        observer = [[_ZLBoundsObserver alloc] initWithView:self];
+
+        objc_setAssociatedObject(self,
+                                 kBoundsObserverKey,
+                                 observer,
+                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+
+    observer.block = block;
+}
+
+- (ZLBoundsDidChangeBlock)zl_boundsDidChangeBlock {
+
+    _ZLBoundsObserver *observer = objc_getAssociatedObject(self, kBoundsObserverKey);
+
+    return observer.block;
+}
+
+@end
 
 @interface ZLTagCollectionView : UICollectionView
 
@@ -196,6 +291,8 @@
 @property (nonatomic,strong)NSMutableDictionary<NSNumber *,UIView *> *viewCache;
 @property (nonatomic,strong)NSMutableDictionary<NSNumber *,NSValue *> *sizeCache;
 @property (nonatomic, assign) CGSize preSize;
+
+@property (nonatomic,assign)BOOL useAutoLayout;
 @end
 
 @implementation ZLTagListView
@@ -609,15 +706,16 @@
         }
         
         if (![cell.subviews.firstObject isEqual:view]) {
-//            [cell.contentView.subviews.firstObject removeFromSuperview];
-            cell.insets = cellInsets;
-            cell.tagView = view;
-//            [cell.contentView addSubview:view];
-//            view.translatesAutoresizingMaskIntoConstraints = NO;
-//            [view.topAnchor constraintEqualToAnchor:cell.contentView.topAnchor constant:cellInsets.top].active = YES;
-//            [view.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor constant:-cellInsets.bottom].active = YES;
-//            [view.leadingAnchor constraintEqualToAnchor:cell.contentView.leadingAnchor constant:cellInsets.left].active = YES;
-//            [view.trailingAnchor constraintEqualToAnchor:cell.contentView.trailingAnchor constant:-cellInsets.right].active = YES;
+            if (self.useAutoLayout) {
+                [cell.subviews.firstObject removeFromSuperview];
+                [cell addSubview:view];
+                view.translatesAutoresizingMaskIntoConstraints = NO;
+                [view.topAnchor constraintEqualToAnchor:cell.topAnchor constant:cellInsets.top].active = YES;
+                [view.leadingAnchor constraintEqualToAnchor:cell.leadingAnchor constant:cellInsets.left].active = YES;
+            }else {
+                cell.insets = cellInsets;
+                cell.tagView = view;
+            }
         }
         self.viewCache[indexKey] = view;
     }
@@ -766,6 +864,11 @@
     _mutableTagViews = [NSMutableArray array];
     _marginCache = [NSMutableDictionary dictionary];
     self.dataSource = self;
+    self.useAutoLayout = YES;
+}
+- (void)setAutoReload:(BOOL)autoReload {
+    _autoReload = autoReload;
+    self.useAutoLayout = autoReload;
 }
 
 // 强制数据源始终为自身
@@ -830,12 +933,23 @@
    self.marginCache[@(index)] = [NSValue valueWithUIEdgeInsets:margin];
    [self reloadData];
 }
+
+
 #pragma mark - ZLTagListViewDataSource
 
 - (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView {
     return self.mutableTagViews.count;
 }
-
+- (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    UICollectionViewCell *cell = [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
+    if (self.autoReload) {
+        __weak typeof(self) weakSelf = self;
+        [cell.subviews.firstObject setZl_boundsDidChangeBlock:^(UIView *view, CGRect oldBounds, CGRect newBounds) {
+            [weakSelf reloadData];
+        }];
+    }
+    return cell;
+}
 - (UIView *)tagListView:(ZLTagListView *)tagListView
             dequeueView:(__kindof UIView * _Nullable)view
           forTagAtIndex:(NSInteger)index {

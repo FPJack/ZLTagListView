@@ -43,6 +43,7 @@
     tagListView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:tagListView];
     self.tagListView = tagListView;
+    tagListView.autoReload = YES;
 
     // 点击标签即移除
     __weak typeof(self) weakSelf = self;
@@ -99,8 +100,8 @@
 - (void)onAdd {
     self.counter += 1;
     NSString *title = [NSString stringWithFormat:@"Tag %ld", (long)self.counter];
-    
-    [self.tagListView addView:[self makeTagWithTitle:title]];
+    UILabel *labe = [self makeTagWithTitle:title];
+    [self.tagListView addView:labe];
     [self.tagListView setMargin:UIEdgeInsetsMake(5, 5, 5, 5) atIndex:self.tagListView.tagViews.count - 1];
 }
 
