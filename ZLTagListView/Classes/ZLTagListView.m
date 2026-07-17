@@ -473,7 +473,7 @@
 //                CGFloat totalWidth = maxLineWidth + _contentInset.left + _contentInset.right;
 //
 //                CGFloat totalHeight = y + lineHeight + _contentInset.bottom;
-//            
+//
 //                NSLog(@"y: %f, lineHeight: %f  %f", y, lineHeight,totalHeight);
 //
 //                return CGSizeMake(
@@ -702,4 +702,108 @@
         self.didUpdateContentWidth(self, width);
     }
 }
+@end
+
+
+@interface ZLViewTagListView ()
+@property (nonatomic, strong) NSMutableArray<UIView *> *mutableTagViews;
+@end
+
+@implementation ZLViewTagListView
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setupViewTagList];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setupViewTagList];
+    }
+    return self;
+}
+
+- (void)setupViewTagList {
+    _mutableTagViews = [NSMutableArray array];
+    self.dataSource = self;
+}
+
+// 强制数据源始终为自身
+- (void)setDataSource:(id<ZLTagListViewDataSource>)dataSource {
+    if (![dataSource isEqual:self]) return;
+    [super setDataSource:dataSource];
+}
+
+- (NSArray<__kindof UIView *> *)tagViews {
+    return [self.mutableTagViews copy];
+}
+
+#pragma mark - Public
+
+- (void)addView:(UIView *)view {
+    if (!view) return;
+    [self.mutableTagViews addObject:view];
+    [self reloadData];
+}
+
+- (void)addViews:(NSArray<__kindof UIView *> *)views {
+    if (views.count == 0) return;
+    [self.mutableTagViews addObjectsFromArray:views];
+    [self reloadData];
+}
+
+- (void)insertView:(UIView *)view atIndex:(NSInteger)index {
+    if (!view) return;
+    if (index < 0 || index > (NSInteger)self.mutableTagViews.count) {
+        [self.mutableTagViews addObject:view];
+    } else {
+        [self.mutableTagViews insertObject:view atIndex:index];
+    }
+    [self reloadData];
+}
+
+- (void)removeView:(UIView *)view {
+    if (!view) return;
+    NSUInteger idx = [self.mutableTagViews indexOfObject:view];
+    if (idx == NSNotFound) return;
+    [self.mutableTagViews removeObjectAtIndex:idx];
+    [self reloadData];
+}
+
+- (void)removeViewAtIndex:(NSInteger)index {
+    if (index < 0 || index >= (NSInteger)self.mutableTagViews.count) return;
+    [self.mutableTagViews removeObjectAtIndex:index];
+    [self reloadData];
+}
+
+- (void)removeAllViews {
+    [self.mutableTagViews removeAllObjects];
+    [self reloadData];
+}
+
+#pragma mark - ZLTagListViewDataSource
+
+- (NSInteger)numberOfTagsInTagListView:(ZLTagListView *)tagListView {
+    return self.mutableTagViews.count;
+}
+
+- (UIView *)tagListView:(ZLTagListView *)tagListView
+            dequeueView:(__kindof UIView * _Nullable)view
+          forTagAtIndex:(NSInteger)index {
+    if (index >= 0 && index < (NSInteger)self.mutableTagViews.count) {
+        return self.mutableTagViews[index];
+    }
+    return [UIView new];
+}
+
+- (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index {
+    if (self.didSelectTag && index >= 0 && index < (NSInteger)self.mutableTagViews.count) {
+        self.didSelectTag(self, self.mutableTagViews[index], index);
+    }
+}
+
 @end

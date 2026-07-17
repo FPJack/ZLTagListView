@@ -4,6 +4,7 @@
 //
 
 #import "ZLViewController.h"
+#import "ZLViewTagDemoController.h"
 #import <ZLTagListView/ZLTagListView.h>
 
 @interface ZLViewController ()<ZLTagListViewDataSource>
@@ -39,6 +40,31 @@
 
     [self setupControlPanel];
     [self setupTagListView];
+
+    self.navigationItem.rightBarButtonItem =
+        [[UIBarButtonItem alloc] initWithTitle:@"ViewTag Demo"
+                                         style:UIBarButtonItemStylePlain
+                                        target:self
+                                        action:@selector(openViewTagDemo)];
+}
+
+- (void)openViewTagDemo {
+    ZLViewTagDemoController *vc = [ZLViewTagDemoController new];
+    if (self.navigationController) {
+        [self.navigationController pushViewController:vc animated:YES];
+    } else {
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.modalPresentationStyle = UIModalPresentationFullScreen;
+        vc.navigationItem.leftBarButtonItem =
+            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                                                          target:self
+                                                          action:@selector(dismissDemo)];
+        [self presentViewController:nav animated:YES completion:nil];
+    }
+}
+
+- (void)dismissDemo {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - UI

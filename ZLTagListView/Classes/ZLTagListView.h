@@ -104,4 +104,29 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
                  numberOfTags:(NSInteger (^)(ZLBlockTagListView *tagListView))numberOfTags
                   dequeueView:(UIView * (^)(ZLBlockTagListView  *tagListView, __kindof UIView * _Nullable view, NSInteger index))dequeueView;
 @end
+
+/// 便捷TagListView子类：直接以 UIView 管理标签，无需实现数据源
+/// 通过 addView: / removeView: / removeAllViews 增删标签，内部自动刷新
+@interface ZLViewTagListView : ZLTagListView <ZLTagListViewDataSource>
+
+/// 当前所有标签视图（只读）
+@property (nonatomic, copy, readonly) NSArray<__kindof UIView *> *tagViews;
+/// 标签被选中回调（可选）
+@property (nonatomic, copy, nullable) void (^didSelectTag)(ZLViewTagListView *tagListView, __kindof UIView *view, NSInteger index);
+
+/// 添加一个标签视图（追加到末尾），并自动刷新
+- (void)addView:(UIView *)view;
+/// 批量添加标签视图，并自动刷新
+- (void)addViews:(NSArray<__kindof UIView *> *)views;
+/// 在指定位置插入标签视图，并自动刷新
+- (void)insertView:(UIView *)view atIndex:(NSInteger)index;
+/// 移除指定标签视图，并自动刷新
+- (void)removeView:(UIView *)view;
+/// 移除指定位置的标签视图，并自动刷新
+- (void)removeViewAtIndex:(NSInteger)index;
+/// 移除所有标签视图，并自动刷新
+- (void)removeAllViews;
+
+@end
+
 NS_ASSUME_NONNULL_END
