@@ -100,10 +100,17 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 @interface ZLBlockTagListView : ZLTagListView <ZLTagListViewDataSource>
 
 @property (nonatomic, copy) NSInteger (^numberOfTags)(ZLBlockTagListView *tagListView);
+
 @property (nonatomic, copy) UIView * (^dequeueView)(ZLBlockTagListView  *tagListView, __kindof UIView * _Nullable view, NSInteger index);
+
 @property (nonatomic, copy) void (^didSelectTag)(ZLBlockTagListView * tagListView, NSInteger index);
+
 @property (nonatomic, copy) void (^didUpdateContentHeight)(ZLBlockTagListView * tagListView, CGFloat height);
+
 @property (nonatomic, copy) void (^didUpdateContentWidth)(ZLBlockTagListView * tagListView, CGFloat width);
+
+@property (nonatomic, copy) UIEdgeInsets (^marginForTag)(ZLBlockTagListView * tagListView, NSInteger index);
+
 - (instancetype)initWithFrame:(CGRect)frame
                  numberOfTags:(NSInteger (^)(ZLBlockTagListView *tagListView))numberOfTags
                   dequeueView:(UIView * (^)(ZLBlockTagListView  *tagListView, __kindof UIView * _Nullable view, NSInteger index))dequeueView;
@@ -120,17 +127,23 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 
 /// 添加一个标签视图（追加到末尾），并自动刷新
 - (void)addView:(UIView *)view;
+/// 添加一个标签视图（追加到末尾），并自动刷新，同时设置外边距
+- (void)addView:(UIView *)view margin:(UIEdgeInsets)margin;
+
 /// 批量添加标签视图，并自动刷新
 - (void)addViews:(NSArray<__kindof UIView *> *)views;
 /// 在指定位置插入标签视图，并自动刷新
 - (void)insertView:(UIView *)view atIndex:(NSInteger)index;
+
+/// 在指定位置插入标签视图，并自动刷新，同时设置外边距
+- (void)insertView:(UIView *)view margin:(UIEdgeInsets)margin atIndex:(NSInteger)index;
+
 /// 移除指定标签视图，并自动刷新
 - (void)removeView:(UIView *)view;
 /// 移除指定位置的标签视图，并自动刷新
 - (void)removeViewAtIndex:(NSInteger)index;
 /// 移除所有标签视图，并自动刷新
 - (void)removeAllViews;
-
 ///设置指定标签视图的外边距，并自动刷新
 - (void)setMargin:(UIEdgeInsets)margin atIndex:(NSInteger )index;
 

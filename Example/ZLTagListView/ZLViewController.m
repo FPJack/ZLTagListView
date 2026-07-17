@@ -229,6 +229,6 @@
     NSLog(@"内容宽度更新: %.2f", width);
 }
 - (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView marginForTagAtIndex:(NSInteger)index {
-    return UIEdgeInsetsMake(10, 10, 10, 10);
+    return UIEdgeInsetsMake(5, 5, 5, 5);
 }
 @end

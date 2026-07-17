@@ -730,6 +730,12 @@
         self.didUpdateContentWidth(self, width);
     }
 }
+- (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView marginForTagAtIndex:(NSInteger)index {
+    if (self.marginForTag) {
+        return self.marginForTag(self, index);
+    }
+    return UIEdgeInsetsZero;
+}
 @end
 
 
@@ -779,6 +785,10 @@
     [self.mutableTagViews addObject:view];
     [self reloadData];
 }
+- (void)addView:(UIView *)view margin:(UIEdgeInsets)margin {
+    [self addView:view];
+    [self setMargin:margin atIndex:(self.mutableTagViews.count - 1)];
+}
 
 - (void)addViews:(NSArray<__kindof UIView *> *)views {
     if (views.count == 0) return;
@@ -795,7 +805,10 @@
     }
     [self reloadData];
 }
-
+- (void)insertView:(UIView *)view margin:(UIEdgeInsets)margin atIndex:(NSInteger)index {
+    [self insertView:view atIndex:index];
+    [self setMargin:margin atIndex:index];
+}
 - (void)removeView:(UIView *)view {
     if (!view) return;
     NSUInteger idx = [self.mutableTagViews indexOfObject:view];

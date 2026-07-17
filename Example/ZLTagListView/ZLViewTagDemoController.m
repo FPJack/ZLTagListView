@@ -35,7 +35,7 @@
     tagListView.lineSpacing  = 10;
     tagListView.itemSpacing  = 10;
     tagListView.contentInset = UIEdgeInsetsMake(12, 12, 12, 12);
-    tagListView.maxWidth     = self.view.bounds.size.width - 32;
+//    tagListView.maxWidth     = self.view.bounds.size.width - 32;
     tagListView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1.0];
     tagListView.layer.cornerRadius = 8;
     tagListView.layer.borderWidth = 1;
