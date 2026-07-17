@@ -424,6 +424,70 @@
 
         return CGSizeMake(finalWidth, finalHeight);
     } else {
+//        {
+//            CGFloat contentWidth = availableWidth - _contentInset.left - _contentInset.right;
+//
+//                CGFloat x = 0;
+//
+//                CGFloat y = _contentInset.top;
+//
+//                CGFloat lineHeight = 0;
+//
+//                CGFloat maxLineWidth = 0;
+//
+//                for (NSInteger i = 0; i < count; i++) {
+//
+//                    CGSize itemSize = [self tagListView:self sizeForTagAtIndex:i];
+//                    CGFloat w = ceil(itemSize.width);
+//                    CGFloat h = ceil(itemSize.height);
+//                    itemSize.width = MIN(w, contentWidth);
+//
+//                    // 判断放下当前 item 后是否需要换行
+//
+//                    if (x > 0 && x + _itemSpacing + w > contentWidth) {
+//
+//                        maxLineWidth = MAX(maxLineWidth, x);
+//
+//                        y += lineHeight + _lineSpacing;
+//
+//                        x = 0;
+//
+//                        lineHeight = 0;
+//
+//                    }
+//
+//                    if (x > 0) {
+//
+//                        x += _itemSpacing;
+//
+//                    }
+//
+//                    x += w;
+//
+//                    lineHeight = MAX(lineHeight, h);
+//                    NSLog(@"tag: %zd y: %f w %f res: %d", i, y,w);
+//                }
+//
+//                maxLineWidth = MAX(maxLineWidth, x);
+//
+//                CGFloat totalWidth = maxLineWidth + _contentInset.left + _contentInset.right;
+//
+//                CGFloat totalHeight = y + lineHeight + _contentInset.bottom;
+//            
+//                NSLog(@"y: %f, lineHeight: %f  %f", y, lineHeight,totalHeight);
+//
+//                return CGSizeMake(
+//
+//                    MIN(MAX(totalWidth, _minWidth), availableWidth),
+//
+//                    MIN(MAX(totalHeight, _minHeight), _maxHeight)
+//
+//                );
+//        }
+        
+
+        
+        
         CGFloat contentWidth = availableWidth - _contentInset.left - _contentInset.right;
         CGFloat currentX = 0;
         CGFloat currentY = _contentInset.top;
@@ -438,7 +502,6 @@
                 maxLineWidth = MAX(maxLineWidth, currentLineWidth - _itemSpacing);
                 currentX = 0;
                 currentLineWidth = 0;
-                NSLog(@"lineHeight---%ld---%f",i,lineHeight);
 
                 currentY += lineHeight + _lineSpacing;
                 lineHeight = 0;
@@ -549,7 +612,11 @@
     if (cachedSize) return cachedSize.CGSizeValue;
     
     UIView *view = [self tagListView:self forTagAtIndex:index];
+    [view setNeedsLayout];
+    [view layoutIfNeeded];
     CGSize size = view ? [view systemLayoutSizeFittingSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) withHorizontalFittingPriority:UILayoutPriorityFittingSizeLevel verticalFittingPriority:UILayoutPriorityFittingSizeLevel] : CGSizeZero;
+    size = CGSizeMake(ceil(size.width), ceil(size.height));
+
     cachedSize = [NSValue valueWithCGSize:size];
     if (cachedSize) self.sizeCache[@(index)] = cachedSize;
     return size;

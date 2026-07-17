@@ -14,6 +14,7 @@
 @property (nonatomic, strong) UISegmentedControl *hSeg;
 @property (nonatomic, strong) UISegmentedControl *vSeg;
 @property (nonatomic, strong) UISegmentedControl *cvSeg;
+@property (nonatomic, strong) UISegmentedControl *heightModeSeg;
 @end
 
 @implementation ZLViewController
@@ -25,9 +26,9 @@
 
     _tags = @[@"Swift", @"Objective-C",
               @"iOS", @"UIKit", @"SwiftUI",
-              @"Xcode", @"Auto Layout",
-              @"Runtime", @"KVO", @"Block",
-              @"GCD", @"CoreData", @"Metal",
+//              @"Xcode", @"Auto Layout",
+//              @"Runtime", @"KVO", @"Block",
+////              @"GCD", @"CoreData", @"Metal",
               @"CALayer", @"Combine"
     ];
 
@@ -55,16 +56,21 @@
     _cvSeg.selectedSegmentIndex = 0;
     [_cvSeg addTarget:self action:@selector(onCVChanged) forControlEvents:UIControlEventValueChanged];
 
+    _heightModeSeg = [[UISegmentedControl alloc] initWithItems:@[@"自适应", @"固定高度"]];
+    _heightModeSeg.selectedSegmentIndex = 1;
+    [_heightModeSeg addTarget:self action:@selector(onHeightModeChanged) forControlEvents:UIControlEventValueChanged];
+
     UILabel *tip = [UILabel new];
     tip.font = [UIFont systemFontOfSize:12];
     tip.textColor = [UIColor darkGrayColor];
     tip.numberOfLines = 0;
-    tip.text = @"点击任意标签可随机刷新字体大小；容器已设置 minHeight=320，可观察整体垂直对齐效果";
+    tip.text = @"点击任意标签可随机刷新字体大小；可切换自适应高度与固定高度模式";
 
     UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[
         [self makeTitleLabel:@"水平对齐 alignment"], _hSeg,
         [self makeTitleLabel:@"行内垂直对齐 verticalAlignment"], _vSeg,
         [self makeTitleLabel:@"整体垂直对齐 contentVerticalAlignment"], _cvSeg,
+        [self makeTitleLabel:@"高度模式 heightMode"], _heightModeSeg,
         tip
     ]];
     stack.axis = UILayoutConstraintAxisVertical;
@@ -89,14 +95,14 @@
 }
 
 - (void)setupTagListView {
-    _tagListView = [[ZLTagListView alloc] initWithFrame:CGRectZero];
+    _tagListView = [[ZLTagListView alloc] initWithFrame:self.view.bounds];
     _tagListView.dataSource = self;
     _tagListView.rowHorizontalAlignment = ZLTagRowHorizontalAlignmentStart;
     _tagListView.rowVerticalAlignment = ZLTagRowVerticalAlignmentCenter;
     _tagListView.contentVerticalAlignment = ZLTagContentVerticalAlignmentTop;
-    _tagListView.lineSpacing = 12;
+    _tagListView.lineSpacing = 10;
     _tagListView.itemSpacing = 10;
-    _tagListView.contentInset = UIEdgeInsetsMake(12, 12, 12, 12);
+    _tagListView.contentInset = UIEdgeInsetsMake(10, 10, 10, 10);
 //    _tagListView.minHeight = 320; // 让容器高于内容，便于观察整体垂直对齐
     _tagListView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1.0];
     _tagListView.layer.cornerRadius = 8;
@@ -106,10 +112,9 @@
     [self.view addSubview:_tagListView];
     NSLog(@"self.view frame: %@", NSStringFromCGRect(self.view.frame));
     _tagListView.maxWidth = self.view.bounds.size.width - 220;
-
+    _tagListView.minHeight = 230;
     [NSLayoutConstraint activateConstraints:@[
-//        [_tagListView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:16],
-//        [_tagListView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-16],
+
         [_tagListView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor constant:40],
         [_tagListView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor constant:0],
 
@@ -141,6 +146,12 @@
     _tagListView.contentVerticalAlignment = aligns[_cvSeg.selectedSegmentIndex];
 }
 
+- (void)onHeightModeChanged {
+    BOOL isAdaptive = (_heightModeSeg.selectedSegmentIndex == 0);
+    _tagListView.minHeight = isAdaptive ? 0 : 230;
+    [_tagListView reloadData];
+}
+
 - (void)randomizeFontSizes {
     for (NSInteger i = 0; i < _tags.count; i++) {
         _fontSizes[i] = @(12 + arc4random_uniform(17));
@@ -168,7 +179,7 @@
     CGFloat fontSize = self.fontSizes[index].floatValue;
 //    fontSize = 15;
     label.font = [UIFont systemFontOfSize:fontSize];
-    label.text = [NSString stringWithFormat:@"  %@  ", self.tags[index]];
+    label.text = [NSString stringWithFormat:@"%@", self.tags[index]];
 
     NSUInteger seed = [self.tags[index] hash];
     CGFloat r = ((seed & 0xFF)) / 255.0;
