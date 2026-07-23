@@ -40,6 +40,7 @@
     tagListView.layer.cornerRadius = 8;
     tagListView.layer.borderWidth = 1;
     tagListView.layer.borderColor = [UIColor colorWithWhite:0.85 alpha:1.0].CGColor;
+    tagListView.tagMargin = UIEdgeInsetsMake(15, 15, 15, 15);
     tagListView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:tagListView];
     self.tagListView = tagListView;
@@ -102,7 +103,7 @@
     NSString *title = [NSString stringWithFormat:@"Tag %ld", (long)self.counter];
     UILabel *labe = [self makeTagWithTitle:title];
     [self.tagListView addView:labe];
-    [self.tagListView setMargin:UIEdgeInsetsMake(5, 5, 5, 5) atIndex:self.tagListView.tagViews.count - 1];
+    [self.tagListView setTagMargin:UIEdgeInsetsMake(5, 5, 5, 5) atIndex:self.tagListView.tagViews.count - 1];
 }
 
 - (void)onRemoveLast {

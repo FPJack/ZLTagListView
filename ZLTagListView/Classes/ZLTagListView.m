@@ -890,7 +890,7 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
 }
 - (void)addView:(UIView *)view margin:(UIEdgeInsets)margin {
     [self addView:view];
-    [self setMargin:margin atIndex:(self.mutableTagViews.count - 1)];
+    [self setTagMargin:margin atIndex:(self.mutableTagViews.count - 1)];
 }
 
 - (void)addViews:(NSArray<__kindof UIView *> *)views {
@@ -910,7 +910,7 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
 }
 - (void)insertView:(UIView *)view margin:(UIEdgeInsets)margin atIndex:(NSInteger)index {
     [self insertView:view atIndex:index];
-    [self setMargin:margin atIndex:index];
+    [self setTagMargin:margin atIndex:index];
 }
 - (void)removeView:(UIView *)view {
     if (!view) return;
@@ -929,7 +929,7 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
     [self.mutableTagViews removeAllObjects];
     [self reloadData];
 }
-- (void)setMargin:(UIEdgeInsets)margin atIndex:(NSInteger )index{
+- (void)setTagMargin:(UIEdgeInsets)margin atIndex:(NSInteger )index{
    self.marginCache[@(index)] = [NSValue valueWithUIEdgeInsets:margin];
    [self reloadData];
 }
@@ -965,6 +965,7 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
     }
 }
 - (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView marginForTagAtIndex:(NSInteger)index {
-    return [self.marginCache[@(index)] UIEdgeInsetsValue];
+    UIEdgeInsets margin = [self.marginCache[@(index)] UIEdgeInsetsValue];
+    return UIEdgeInsetsEqualToEdgeInsets(margin, UIEdgeInsetsZero) ? self.tagMargin : margin;
 }
 @end

@@ -123,6 +123,9 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 ///tagView 尺寸变化的时候是否自动刷新
 @property (nonatomic, assign) BOOL autoReload;
 
+/// 标签视图的默认外边距，默认UIEdgeInsetsMake(0, 0, 0, 0)，可通过 setMargin:atIndex: 设置指定标签的外边距
+@property (nonatomic, assign)UIEdgeInsets tagMargin;
+
 /// 当前所有标签视图（只读）
 @property (nonatomic, copy, readonly) NSArray<__kindof UIView *> *tagViews;
 /// 标签被选中回调（可选）
@@ -148,7 +151,7 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 /// 移除所有标签视图，并自动刷新
 - (void)removeAllViews;
 ///设置指定标签视图的外边距，并自动刷新
-- (void)setMargin:(UIEdgeInsets)margin atIndex:(NSInteger )index;
+- (void)setTagMargin:(UIEdgeInsets)margin atIndex:(NSInteger )index;
 
 @end
 
