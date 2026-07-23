@@ -94,6 +94,10 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 - (void)reloadData;
 /// 同步刷新数据，调用后立即更新布局并调整自身尺寸，适用于需要在刷新后立即获取正确布局的场景
 - (void)syncReloadData;
+
+
+/// 滚动到指定索引的标签位置
+- (void)scrollToItemAtIndex:(NSInteger)indexPath atScrollPosition:(UICollectionViewScrollPosition)scrollPosition animated:(BOOL)animated;
 @end
 
 ///便捷TagListView子类 提供Block方式回调

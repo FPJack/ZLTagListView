@@ -667,6 +667,9 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
     [self reloadData];
     [self layoutIfNeeded];
 }
+- (void)scrollToItemAtIndex:(NSInteger)indexPath atScrollPosition:(UICollectionViewScrollPosition)scrollPosition animated:(BOOL)animated {
+    [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:indexPath inSection:0] atScrollPosition:scrollPosition animated:animated];
+}
 - (void)sizeToFit {
     CGSize size = [self calculateContentSize];
     CGRect frame = self.frame;
