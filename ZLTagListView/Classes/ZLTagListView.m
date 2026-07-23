@@ -965,7 +965,7 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
     }
 }
 - (UIEdgeInsets)tagListView:(ZLTagListView *)tagListView marginForTagAtIndex:(NSInteger)index {
-    UIEdgeInsets margin = [self.marginCache[@(index)] UIEdgeInsetsValue];
-    return UIEdgeInsetsEqualToEdgeInsets(margin, UIEdgeInsetsZero) ? self.tagMargin : margin;
+    NSValue *value = self.marginCache[@(index)];
+    return value ? value.UIEdgeInsetsValue : self.tagMargin;
 }
 @end
