@@ -1,6 +1,6 @@
 # ZLTagListView
 
-`ZLTagListView` 是一个基于 `UICollectionView` 的轻量级标签流式布局组件。支持自动换行、多维度对齐（行内水平 / 行内垂直 / 内容整体垂直）、RTL 布局、自定义标签视图，以及通过 `intrinsicContentSize` 在 Auto Layout / `UIStackView` 中自动撑开。
+`ZLTagListView` 是一个基于 `UICollectionView` 的轻量级标签流式布局组件。支持自动换行、多维度对齐（行内水平 / 行内垂直 / 内容整体垂直）、RTL 布局、自定义标签视图、自定义头尾视图，以及通过 `intrinsicContentSize` 在 Auto Layout / `UIStackView` 中自动撑开。
 
 ---
 
@@ -17,10 +17,12 @@
 - ✅ 支持自定义标签视图（返回任意 `UIView`）
 - ✅ 支持为每个标签单独设置外边距（`margin`）
 - ✅ 支持设置最大 / 最小宽高，内容在范围内自适应
+- ✅ **支持自定义头视图 / 尾视图**（`headerView` / `footerView`），宽高自适应，且与 `contentInset` 联动，不会重复叠加间距
 - ✅ 实现 `intrinsicContentSize`，可在 `UIStackView` / Auto Layout 中自动撑开
 - ✅ 支持 RTL（阿拉伯语等从右到左布局），可自动检测或强制开启
 - ✅ 提供 `ZLBlockTagListView` 子类，支持 Block 回调方式
 - ✅ 提供 `ZLViewTagListView` 子类，直接以 `UIView` 增删标签（`addView:` / `removeView:` / `removeAllViews`），无需实现数据源
+- ✅ 提供 `ZLSelectableTagListView` 子类，内置单选 / 多选能力，选中样式由 Block 自定义
 - ✅ 提供内容尺寸预计算与同步刷新 API
 
 ---
@@ -192,6 +194,11 @@ tagListView.didUpdateContentWidth = ^(ZLBlockTagListView *tagListView, CGFloat w
     NSLog(@"宽度: %.2f", width);
 };
 
+// 为指定标签设置外边距（可选）
+tagListView.marginForTag = ^UIEdgeInsets(ZLBlockTagListView *tagListView, NSInteger index) {
+    return UIEdgeInsetsMake(4, 4, 4, 4);
+};
+
 tagListView.translatesAutoresizingMaskIntoConstraints = NO;
 [self.view addSubview:tagListView];
 ```
@@ -210,6 +217,7 @@ tagListView.rowHorizontalAlignment = ZLTagRowHorizontalAlignmentStart;
 tagListView.lineSpacing  = 10;
 tagListView.itemSpacing  = 10;
 tagListView.contentInset = UIEdgeInsetsMake(12, 12, 12, 12);
+tagListView.tagMargin    = UIEdgeInsetsMake(4, 4, 4, 4); // 所有标签默认外边距
 tagListView.autoReload   = YES;   // 标签视图尺寸变化时自动刷新
 tagListView.translatesAutoresizingMaskIntoConstraints = NO;
 [self.view addSubview:tagListView];
@@ -252,7 +260,7 @@ for (NSString *title in @[@"Swift", @"Objective-C", @"iOS", @"UIKit"]) {
 [tagListView removeAllViews];
 
 // 单独设置某个标签的外边距
-[tagListView setMargin:UIEdgeInsetsMake(5, 5, 5, 5) atIndex:0];
+[tagListView setTagMargin:UIEdgeInsetsMake(5, 5, 5, 5) atIndex:0];
 ```
 
 ### 3. 点击回调
@@ -271,7 +279,73 @@ NSArray<__kindof UIView *> *views = tagListView.tagViews;   // 只读，当前�
 NSInteger count = tagListView.tagViews.count;
 ```
 
-> **提示**：`ZLViewTagListView` 内部已把自身设为数据源，因此**不要**再手动设置 `dataSource`。`ZLTagListView` 的对齐、间距、最大最小宽高、RTL 等能力它全部继承可用。
+> **提示**：`ZLViewTagListView` 内部已把自身设为数据源，因此**不要**再手动设置 `dataSource`。`ZLTagListView` 的对齐、间距、最大最小宽高、头尾视图、RTL 等能力它全部继承可用。
+
+---
+
+## 方式四：ZLSelectableTagListView（内置单选 / 多选能力）
+
+`ZLSelectableTagListView` 继承自 `ZLViewTagListView`，在其增删标签能力之上叠加了**单选 / 多选状态管理**，选中态与未选中态的外观完全由 Block 自定义，无需自己维护选中数组。
+
+### 1. 创建与配置
+
+```objc
+ZLSelectableTagListView *tagListView = [[ZLSelectableTagListView alloc] initWithFrame:CGRectZero];
+tagListView.selectionMode         = ZLTagSelectionModeSingle;  // 单选（默认）/ ZLTagSelectionModeMultiple 多选
+tagListView.allowsEmptySelection  = YES;                       // 是否允许点击已选中项取消选中，默认 YES
+tagListView.rowHorizontalAlignment = ZLTagRowHorizontalAlignmentStart;
+tagListView.lineSpacing  = 10;
+tagListView.itemSpacing  = 10;
+tagListView.translatesAutoresizingMaskIntoConstraints = NO;
+[self.view addSubview:tagListView];
+
+// 选中态样式
+tagListView.selectedStyleBlock = ^(UILabel *view, NSInteger index) {
+    view.backgroundColor = UIColor.systemBlueColor;
+    view.textColor       = UIColor.whiteColor;
+};
+// 未选中态（默认态）样式：新增标签、取消选中时都会调用
+tagListView.normalStyleBlock = ^(UILabel *view, NSInteger index) {
+    view.backgroundColor = UIColor.whiteColor;
+    view.textColor       = UIColor.darkTextColor;
+};
+// 选中状态变化回调
+tagListView.didChangeSelection = ^(ZLSelectableTagListView *list, NSArray<NSNumber *> *selectedIndexes) {
+    NSLog(@"当前选中: %@", selectedIndexes);
+};
+
+// 添加标签
+for (NSString *title in @[@"全部", @"男装", @"女装", @"童装"]) {
+    UILabel *label = [UILabel new];
+    label.text = title;
+    label.textAlignment = NSTextAlignmentCenter;
+    label.layer.cornerRadius = 6;
+    label.layer.masksToBounds = YES;
+    [tagListView addView:label];
+}
+
+// 设置默认选中项（建议在 addView(s) 之后调用）
+[tagListView setSelectedIndex:0];
+```
+
+### 2. 编程式选中控制
+
+```objc
+[tagListView selectIndex:1];              // 选中指定索引
+[tagListView deselectIndex:1];            // 取消选中指定索引
+[tagListView deselectAll];                // 取消所有选中
+[tagListView setSelectedIndexes:@[@0,@2]];// 批量设置默认选中（多选模式下全部生效，单选模式下仅第一个生效）
+BOOL selected = [tagListView isIndexSelected:0];
+```
+
+### 3. 读取选中结果
+
+```objc
+NSArray<NSNumber *> *indexes = tagListView.selectedIndexes; // 按选中顺序排列
+NSArray<__kindof UIView *> *views = tagListView.selectedViews;
+```
+
+> **提示**：切换 `selectionMode` 会自动清空当前选中状态；`allowsEmptySelection = NO` 时，单选模式下点击已选中项不会取消选中（保证始终有一项被选中）。
 
 ---
 
@@ -312,6 +386,8 @@ tagListView.minWidth  = 120;          // 内容不足时也不小于该宽度
 tagListView.minHeight = 60;           // 内容不足时也不小于该高度
 ```
 
+> 注意：`maxHeight` / `minHeight` 仅约束**标签网格区域本身**，若设置了 `headerView` / `footerView`，其自身高度会在此基础上额外累加（见下文）。
+
 ### 3. 手动预计算尺寸
 
 在真正布局前就能拿到内容尺寸（例如用于 `UITableView` 行高计算）：
@@ -329,6 +405,37 @@ CGSize size = [tagListView calculateContentSizeWithWidth:320];
 ```objc
 tagListView.horizontalScroll = YES;   // 标签横向排列并支持横向滚动
 ```
+
+### 5. 自定义头视图 / 尾视图
+
+`headerView` / `footerView` 是普通 `UIView`，宽度始终等于父视图可用宽度（自动减去 `contentInset.left/right`），高度根据自身内容自适应（优先按 Auto Layout 约束计算，其次回退 `sizeThatFits:`），并可分别设置与标签区域之间的间距。设置后 `calculateContentSize` / `intrinsicContentSize` 会自动包含其高度，无需额外处理。
+
+```objc
+UILabel *header = [UILabel new];
+header.text = @"热门标签";
+header.font = [UIFont boldSystemFontOfSize:15];
+header.textColor = UIColor.whiteColor;
+header.backgroundColor = UIColor.systemBlueColor;
+header.textAlignment = NSTextAlignmentCenter;
+header.numberOfLines = 0;
+tagListView.headerView = header;
+tagListView.headerBottomSpacing = 8;  // header 底部与标签区域的间距
+
+UILabel *footer = [UILabel new];
+footer.text = @"点击标签可查看详情";
+footer.font = [UIFont systemFontOfSize:12];
+footer.textColor = UIColor.darkGrayColor;
+footer.numberOfLines = 0;
+footer.textAlignment = NSTextAlignmentCenter;
+tagListView.footerView = footer;
+tagListView.footerTopSpacing = 8;      // footer 顶部与标签区域的间距
+```
+
+> **`contentInset` 与头尾视图的联动规则**：
+> - **左右**两侧的 `contentInset.left/right` 始终同时作用于 `headerView`、`footerView` 和标签网格，三者左右边界完全对齐。
+> - **上边距** `contentInset.top`：若设置了 `headerView`，作用在 `headerView` 顶部（即 header 与父视图顶部的间距）；若未设置，则作用在标签网格顶部（行为与不使用头尾视图时完全一致）。
+> - **下边距** `contentInset.bottom`：若设置了 `footerView`，作用在 `footerView` 底部；若未设置，则作用在标签网格底部。
+> - 因此设置头尾视图后，`contentInset.top/bottom` 不会与 `headerBottomSpacing` / `footerTopSpacing` 重复叠加。
 
 ---
 
@@ -377,12 +484,16 @@ tagListView.forceRTL = YES;
 | `contentVerticalAlignment` | `ZLTagContentVerticalAlignment` | `Top` | 内容整体垂直对齐（容器高于内容时生效） |
 | `lineSpacing` | `CGFloat` | `10` | 行间距 |
 | `itemSpacing` | `CGFloat` | `10` | 列间距 |
-| `contentInset` | `UIEdgeInsets` | `(10,10,10,10)` | 内边距 |
+| `contentInset` | `UIEdgeInsets` | `(10,10,10,10)` | 内边距，对 `headerView`/`footerView`/标签网格统一生效（见「自定义头视图 / 尾视图」） |
 | `horizontalScroll` | `BOOL` | `NO` | 是否水平滚动模式 |
 | `maxWidth` | `CGFloat` | `CGFLOAT_MAX` | 最大宽度 |
-| `maxHeight` | `CGFloat` | `CGFLOAT_MAX` | 最大高度 |
+| `maxHeight` | `CGFloat` | `CGFLOAT_MAX` | 最大高度（仅约束标签网格区域） |
 | `minWidth` | `CGFloat` | `0` | 最小宽度 |
-| `minHeight` | `CGFloat` | `0` | 最小高度 |
+| `minHeight` | `CGFloat` | `0` | 最小高度（仅约束标签网格区域） |
+| `headerView` | `UIView *` | `nil` | 自定义头视图，宽度自适应父视图，高度自适应内容 |
+| `footerView` | `UIView *` | `nil` | 自定义尾视图，宽度自适应父视图，高度自适应内容 |
+| `headerBottomSpacing` | `CGFloat` | `0` | `headerView` 底部与标签区域的间距 |
+| `footerTopSpacing` | `CGFloat` | `0` | `footerView` 顶部与标签区域的间距 |
 | `forceRTL` | `BOOL` | `NO` | 强制启用 RTL 布局 |
 | `autoDetectRTL` | `BOOL` | `YES` | 自动检测系统 RTL 方向 |
 
@@ -390,10 +501,11 @@ tagListView.forceRTL = YES;
 
 | 方法 | 说明 |
 | --- | --- |
-| `- (CGSize)calculateContentSize` | 按当前配置（含 `maxWidth`）计算内容尺寸 |
+| `- (CGSize)calculateContentSize` | 按当前配置（含 `maxWidth`、头尾视图）计算内容尺寸 |
 | `- (CGSize)calculateContentSizeWithWidth:` | 按指定宽度计算内容尺寸 |
 | `- (void)reloadData` | 异步刷新数据 |
 | `- (void)syncReloadData` | 同步刷新并立即更新布局与自身尺寸 |
+| `- (void)scrollToItemAtIndex:atScrollPosition:animated:` | 滚动到指定索引的标签位置 |
 
 ### 枚举
 
@@ -418,6 +530,12 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
     ZLTagContentVerticalAlignmentCenter,  // 整体居中
     ZLTagContentVerticalAlignmentBottom   // 底部
 };
+
+// 标签选择模式（ZLSelectableTagListView 使用）
+typedef NS_ENUM(NSInteger, ZLTagSelectionMode) {
+    ZLTagSelectionModeSingle,   // 单选（默认）
+    ZLTagSelectionModeMultiple  // 多选
+};
 ```
 
 ### ZLTagListViewDataSource 协议
@@ -427,6 +545,7 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 | `numberOfTagsInTagListView:` | ✅ | 返回标签总数 |
 | `tagListView:dequeueView:forTagAtIndex:` | ✅ | 返回标签视图（支持复用） |
 | `tagListView:didSelectTagAtIndex:` | ❌ | 标签点击回调 |
+| `tagListView:marginForTagAtIndex:` | ❌ | 返回指定标签的外边距 |
 | `tagListView:didUpdateContentHeight:` | ❌ | 内容高度变化回调 |
 | `tagListView:didUpdateContentWidth:` | ❌ | 内容宽度变化回调 |
 
@@ -437,6 +556,7 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 | `numberOfTags` | 返回标签总数的 Block |
 | `dequeueView` | 返回标签视图的 Block |
 | `didSelectTag` | 点击回调 Block |
+| `marginForTag` | 返回指定标签外边距的 Block |
 | `didUpdateContentHeight` | 高度变化回调 Block |
 | `didUpdateContentWidth` | 宽度变化回调 Block |
 
@@ -446,6 +566,7 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 | --- | --- | --- | --- |
 | `tagViews` | `NSArray<__kindof UIView *>`（只读） | `@[]` | 当前所有标签视图 |
 | `autoReload` | `BOOL` | `NO` | 标签视图尺寸变化时是否自动刷新 |
+| `tagMargin` | `UIEdgeInsets` | `UIEdgeInsetsZero` | 所有标签的默认外边距 |
 | `didSelectTag` | `void(^)(ZLViewTagListView *, __kindof UIView *, NSInteger)` | `nil` | 标签点击回调 |
 
 ### ZLViewTagListView 方法
@@ -460,9 +581,32 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 | `- (void)removeView:` | 移除指定标签视图 |
 | `- (void)removeViewAtIndex:` | 移除指定位置的标签视图 |
 | `- (void)removeAllViews` | 移除所有标签视图 |
-| `- (void)setMargin:atIndex:` | 设置指定位置标签视图的外边距 |
+| `- (void)setTagMargin:atIndex:` | 设置指定位置标签视图的外边距 |
 
 > 以上增删方法内部都会自动刷新布局并更新 `intrinsicContentSize`。
+
+### ZLSelectableTagListView 属性
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `selectionMode` | `ZLTagSelectionMode` | `Single` | 单选 / 多选，切换后自动清空选中状态 |
+| `allowsEmptySelection` | `BOOL` | `YES` | 是否允许点击已选中项取消选中 |
+| `selectedIndexes` | `NSArray<NSNumber *>`（只读） | `@[]` | 当前选中的标签索引（按选中顺序） |
+| `selectedViews` | `NSArray<UIView *>`（只读） | `@[]` | 当前选中的标签视图（按选中顺序） |
+| `selectedStyleBlock` | `void(^)(UIView *, NSInteger)` | `nil` | 选中态样式设置 Block |
+| `normalStyleBlock` | `void(^)(UIView *, NSInteger)` | `nil` | 未选中态样式设置 Block |
+| `didChangeSelection` | `void(^)(ZLSelectableTagListView *, NSArray<NSNumber *> *)` | `nil` | 选中状态变化回调 |
+
+### ZLSelectableTagListView 方法
+
+| 方法 | 说明 |
+| --- | --- |
+| `- (void)setSelectedIndexes:` | 设置默认选中的标签索引（会先清空当前选中） |
+| `- (void)setSelectedIndex:` | 设置默认选中的单个标签索引 |
+| `- (void)selectIndex:` | 选中指定索引的标签 |
+| `- (void)deselectIndex:` | 取消选中指定索引的标签 |
+| `- (void)deselectAll` | 取消选中所有标签 |
+| `- (BOOL)isIndexSelected:` | 查询指定索引是否处于选中状态 |
 
 ---
 
@@ -622,6 +766,8 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 - **行内垂直对齐（vSeg）**：由于字体大小随机，同一行标签高度不同，切换 `Top / Center / Bottom` 可看到矮标签相对最高标签的对齐变化。
 - **整体垂直对齐（cvSeg）**：因设置了 `minHeight=300`，内容不足时容器有空白，切换 `Top / Center / Bottom`，所有标签作为整体贴顶 / 居中 / 贴底。
 - **点击标签**：随机刷新字体大小，可反复观察各种组合下的表现。
+
+> 更多可运行示例（`ZLViewTagListView` 增删标签、`ZLSelectableTagListView` 单选/多选）见 `Example` 工程中的 `ZLViewTagDemoController` 与 `ZLSelectableTagDemoController`。
 
 ---
 

@@ -45,6 +45,28 @@
     [self.view addSubview:tagListView];
     self.tagListView = tagListView;
     tagListView.autoReload = YES;
+    
+    
+    // 头视图：标题栏，高度自适应，宽度与父视图一致
+    UILabel *header = [UILabel new];
+    header.text = @"技术标签（headerView 示例）";
+    header.font = [UIFont boldSystemFontOfSize:14];
+    header.textColor = [UIColor whiteColor];
+    header.backgroundColor = [UIColor systemBlueColor];
+    header.textAlignment = NSTextAlignmentCenter;
+    header.numberOfLines = 0;
+    tagListView.headerView = header;
+    tagListView.headerBottomSpacing = 8;
+
+    // 尾视图：说明文字，高度自适应，宽度与父视图一致
+    UILabel *footer = [UILabel new];
+    footer.text = @"footerView 示例：点击标签可随机刷新字体大小";
+    footer.font = [UIFont systemFontOfSize:12];
+    footer.textColor = [UIColor darkGrayColor];
+    footer.numberOfLines = 0;
+    footer.textAlignment = NSTextAlignmentCenter;
+    tagListView.footerView = footer;
+    tagListView.footerTopSpacing = 8;
 
     // 点击标签即移除
     __weak typeof(self) weakSelf = self;

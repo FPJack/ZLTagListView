@@ -332,6 +332,8 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
     _minHeight = 0;
     _forceRTL = NO;
     _autoDetectRTL = YES;
+    _headerBottomSpacing = 0;
+    _footerTopSpacing = 0;
 }
 
 - (void)setupCollectionView {
@@ -379,9 +381,58 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
         [_flowLayout invalidateLayout];
         [self invalidateIntrinsicContentSize];
     }
-    if (!CGRectEqualToRect(_collectionView.frame, self.bounds)) {
-        _collectionView.frame = self.bounds;
+
+    CGFloat width = self.bounds.size.width;
+    CGFloat auxWidth = MAX(0, width - _contentInset.left - _contentInset.right);
+    CGFloat headerHeight = _headerView ? [self fittingHeightForAuxiliaryView:_headerView width:auxWidth] : 0;
+    CGFloat footerHeight = _footerView ? [self fittingHeightForAuxiliaryView:_footerView width:auxWidth] : 0;
+
+    CGFloat contentTop = 0;
+    if (_headerView) {
+        _headerView.frame = CGRectMake(_contentInset.left, _contentInset.top, auxWidth, headerHeight);
+        contentTop = _contentInset.top + headerHeight + _headerBottomSpacing;
     }
+
+    CGFloat contentBottom = self.bounds.size.height;
+    if (_footerView) {
+        contentBottom -= (_contentInset.bottom + footerHeight + _footerTopSpacing);
+    }
+
+    CGRect collectionFrame = CGRectMake(0, contentTop, width, MAX(0, contentBottom - contentTop));
+    if (!CGRectEqualToRect(_collectionView.frame, collectionFrame)) {
+        _collectionView.frame = collectionFrame;
+    }
+
+    if (_footerView) {
+        _footerView.frame = CGRectMake(_contentInset.left, self.bounds.size.height - _contentInset.bottom - footerHeight, auxWidth, footerHeight);
+    }
+
+    // 头尾视图存在时，其对应方向的 contentInset 已由头尾视图自身承担，标签网格自身不再重复叠加该方向的内边距
+    [self updateEffectiveSectionInset];
+}
+
+/// 根据 headerView / footerView 是否存在，动态调整标签网格（flowLayout）自身的上/下内边距，
+/// 避免与已经由头尾视图承担的 contentInset.top / contentInset.bottom 重复叠加；左右内边距始终保持不变
+- (void)updateEffectiveSectionInset {
+    UIEdgeInsets inset = _contentInset;
+    if (_headerView) inset.top = 0;
+    if (_footerView) inset.bottom = 0;
+    if (!UIEdgeInsetsEqualToEdgeInsets(_flowLayout.sectionInset, inset)) {
+        _flowLayout.sectionInset = inset;
+        [_flowLayout invalidateLayout];
+    }
+}
+
+/// 测量辅助视图（头/尾视图）在给定宽度下的自适应高度：优先按 Auto Layout 约束计算，失败则回退到 sizeThatFits:
+- (CGFloat)fittingHeightForAuxiliaryView:(UIView *)view width:(CGFloat)width {
+    if (!view || width <= 0) return 0;
+    CGSize fitSize = [view systemLayoutSizeFittingSize:CGSizeMake(width, UILayoutFittingCompressedSize.height)
+                                withHorizontalFittingPriority:UILayoutPriorityRequired
+                                      verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+    if (fitSize.height <= 0) {
+        fitSize = [view sizeThatFits:CGSizeMake(width, CGFLOAT_MAX)];
+    }
+    return ceil(MAX(fitSize.height, 0));
 }
 
 #pragma mark - Setters
@@ -418,8 +469,9 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
 
 - (void)setContentInset:(UIEdgeInsets)contentInset {
     _contentInset = contentInset;
-    _flowLayout.sectionInset = contentInset;
-    [_flowLayout invalidateLayout];
+    [self updateEffectiveSectionInset];
+    [self setNeedsLayout];
+    [self invalidateIntrinsicContentSize];
 }
 
 - (void)setHorizontalScroll:(BOOL)horizontalScroll {
@@ -460,6 +512,42 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
     [_flowLayout invalidateLayout];
 }
 
+- (void)setHeaderView:(UIView *)headerView {
+    if (_headerView == headerView) return;
+    [_headerView removeFromSuperview];
+    _headerView = headerView;
+    if (headerView) {
+        [self addSubview:headerView];
+    }
+    [self updateEffectiveSectionInset];
+    [self setNeedsLayout];
+    [self invalidateIntrinsicContentSize];
+}
+
+- (void)setFooterView:(UIView *)footerView {
+    if (_footerView == footerView) return;
+    [_footerView removeFromSuperview];
+    _footerView = footerView;
+    if (footerView) {
+        [self addSubview:footerView];
+    }
+    [self updateEffectiveSectionInset];
+    [self setNeedsLayout];
+    [self invalidateIntrinsicContentSize];
+}
+
+- (void)setHeaderBottomSpacing:(CGFloat)headerBottomSpacing {
+    _headerBottomSpacing = headerBottomSpacing;
+    [self setNeedsLayout];
+    [self invalidateIntrinsicContentSize];
+}
+
+- (void)setFooterTopSpacing:(CGFloat)footerTopSpacing {
+    _footerTopSpacing = footerTopSpacing;
+    [self setNeedsLayout];
+    [self invalidateIntrinsicContentSize];
+}
+
 #pragma mark - Public Methods
 
 
@@ -492,6 +580,40 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
     return width;
 }
 - (CGSize)calculateContentSizeWithWidth:(CGFloat)width {
+    CGSize tagSize = [self tagGridContentSizeWithWidth:width];
+
+    if (!_headerView && !_footerView) {
+        return tagSize;
+    }
+
+    // 头尾视图始终期望与父视图（可用宽度）等宽（左右两侧统一按 contentInset 收进）
+    CGFloat containerWidth = MAX(tagSize.width, width);
+    if (_maxWidth < CGFLOAT_MAX) {
+        containerWidth = MIN(containerWidth, _maxWidth);
+    }
+    containerWidth = MAX(containerWidth, _minWidth);
+
+    CGFloat auxWidth = MAX(0, containerWidth - _contentInset.left - _contentInset.right);
+    CGFloat headerHeight = _headerView ? [self fittingHeightForAuxiliaryView:_headerView width:auxWidth] : 0;
+    CGFloat footerHeight = _footerView ? [self fittingHeightForAuxiliaryView:_footerView width:auxWidth] : 0;
+
+    // tagSize.height 内部已经恰好包含一份 contentInset.top 和一份 contentInset.bottom
+    // （无论是否存在头尾视图，最外层顶部/底部间距始终只需要这一份），
+    // 因此只需在此基础上直接累加头/尾视图自身的高度与间距即可，不能再重复扣减 contentInset
+    CGFloat totalHeight = tagSize.height;
+    if (_headerView) {
+        totalHeight += headerHeight + _headerBottomSpacing;
+    }
+    if (_footerView) {
+        totalHeight += footerHeight + _footerTopSpacing;
+    }
+    totalHeight = MAX(totalHeight, 0);
+
+    return CGSizeMake(containerWidth, totalHeight);
+}
+
+/// 标签网格区域自身的内容尺寸计算（不含头尾视图），受 minWidth/maxWidth/minHeight/maxHeight 约束
+- (CGSize)tagGridContentSizeWithWidth:(CGFloat)width {
     if (width <= 0) {
         return CGSizeZero;
     }

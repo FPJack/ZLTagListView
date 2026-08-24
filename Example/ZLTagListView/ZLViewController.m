@@ -31,7 +31,7 @@
 //              @"Xcode", @"Auto Layout",
 //              @"Runtime", @"KVO", @"Block",
 ////              @"GCD", @"CoreData", @"Metal",
-              @"CALayer", @"Combine"
+//              @"CALayer", @"Combine"
     ];
 
     _fontSizes = [NSMutableArray array];
@@ -150,11 +150,33 @@
     _tagListView.lineSpacing = 10;
     _tagListView.itemSpacing = 10;
     _tagListView.contentInset = UIEdgeInsetsMake(10, 10, 10, 10);
-//    _tagListView.minHeight = 320; // 让容器高于内容，便于观察整体垂直对齐
-    _tagListView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1.0];
+
+    // 头视图：标题栏，高度自适应，宽度与父视图一致
+    UILabel *header = [UILabel new];
+    header.text = @"技术标签（headerView 示例）";
+    header.font = [UIFont boldSystemFontOfSize:14];
+    header.textColor = [UIColor whiteColor];
+    header.backgroundColor = [UIColor systemBlueColor];
+    header.textAlignment = NSTextAlignmentCenter;
+    header.numberOfLines = 0;
+    _tagListView.headerView = header;
+    _tagListView.headerBottomSpacing = 8;
+
+    // 尾视图：说明文字，高度自适应，宽度与父视图一致
+    UILabel *footer = [UILabel new];
+    footer.text = @"footerView 示例：点击标签可随机刷新字体大小";
+    footer.font = [UIFont systemFontOfSize:12];
+    footer.textColor = [UIColor darkGrayColor];
+    footer.numberOfLines = 0;
+    footer.textAlignment = NSTextAlignmentCenter;
+    _tagListView.footerView = footer;
+    _tagListView.footerTopSpacing = 8;
+
+
     _tagListView.layer.cornerRadius = 8;
     _tagListView.layer.borderWidth = 1;
     _tagListView.layer.borderColor = [UIColor colorWithWhite:0.85 alpha:1.0].CGColor;
+    _tagListView.layer.masksToBounds = YES;
     _tagListView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:_tagListView];
     NSLog(@"self.view frame: %@", NSStringFromCGRect(self.view.frame));

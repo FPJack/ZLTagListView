@@ -83,10 +83,26 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 /// 列间距，默认10
 @property (nonatomic, assign) CGFloat itemSpacing;
 /// 内边距，默认UIEdgeInsetsMake(10, 10, 10, 10)
+/// 该内边距对整体内容（headerView / 标签网格 / footerView）统一生效：
+/// 左右两侧始终同时作用于头尾视图和标签网格；上边距作用于 headerView 顶部（若无 headerView 则作用于标签网格顶部）；
+/// 下边距作用于 footerView 底部（若无 footerView 则作用于标签网格底部），不会与头尾视图重复叠加
 @property (nonatomic, assign) UIEdgeInsets contentInset;
 /// 是否水平滚动，默认NO
 @property (nonatomic, assign) BOOL horizontalScroll;
-/// 计算实际内容尺寸（受最大宽高限制）
+/// 自定义头视图，宽度 = 父视图宽度 - contentInset.left - contentInset.right，左右位置随 contentInset 一同缩进
+/// 高度根据自身内容自适应（优先使用 Auto Layout 约束计算，其次回退到 sizeThatFits:）
+/// 设置后会自动加入视图层级，置于标签区域上方；其顶部与父视图顶部的间距即为 contentInset.top
+@property (nonatomic, strong, nullable) UIView *headerView;
+/// 自定义尾视图，宽度 = 父视图宽度 - contentInset.left - contentInset.right，左右位置随 contentInset 一同缩进
+/// 高度根据自身内容自适应
+/// 设置后会自动加入视图层级，置于标签区域下方；其底部与父视图底部的间距即为 contentInset.bottom
+@property (nonatomic, strong, nullable) UIView *footerView;
+/// 头视图底部与标签区域之间的间距，默认0（仅在设置了 headerView 时生效）
+@property (nonatomic, assign) CGFloat headerBottomSpacing;
+/// 尾视图顶部与标签区域之间的间距，默认0（仅在设置了 footerView 时生效）
+@property (nonatomic, assign) CGFloat footerTopSpacing;
+/// 计算实际内容尺寸（受最大宽高限制）。若设置了 headerView / footerView，返回结果会包含其自适应高度及对应间距；
+/// 注意：maxHeight / minHeight 仅约束标签网格区域本身，头尾视图高度在此基础上额外累加
 - (CGSize)calculateContentSize;
 /// 计算内容尺寸，受最大宽度限制
 - (CGSize)calculateContentSizeWithWidth:(CGFloat)width;
