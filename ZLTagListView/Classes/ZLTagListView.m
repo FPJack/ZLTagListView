@@ -972,3 +972,227 @@ static const void *kBoundsObserverKey = &kBoundsObserverKey;
     return value ? value.UIEdgeInsetsValue : self.tagMargin;
 }
 @end
+
+
+@interface ZLSelectableTagListView ()
+/// 已选中的视图集合，使用有序集合保证按选中顺序输出，且不受插入/删除导致的索引变化影响
+@property (nonatomic, strong) NSMutableOrderedSet<UIView *> *selectedViewsSet;
+@end
+
+@implementation ZLSelectableTagListView
+
+- (void)setupViewTagList {
+    [super setupViewTagList];
+    _selectionMode = ZLTagSelectionModeSingle;
+    _allowsEmptySelection = YES;
+    _selectedViewsSet = [NSMutableOrderedSet orderedSet];
+}
+
+- (void)setSelectionMode:(ZLTagSelectionMode)selectionMode {
+    if (_selectionMode == selectionMode) return;
+    _selectionMode = selectionMode;
+    // 切换模式后清空选中状态，避免多选态残留到单选模式下产生歧义
+    [self deselectAll];
+}
+
+#pragma mark - 选中状态读取
+
+- (NSArray<NSNumber *> *)selectedIndexes {
+    NSArray<UIView *> *tagViews = self.tagViews;
+    NSMutableArray<NSNumber *> *result = [NSMutableArray array];
+    for (UIView *view in self.selectedViewsSet) {
+        NSInteger idx = [tagViews indexOfObjectIdenticalTo:view];
+        if (idx != NSNotFound) {
+            [result addObject:@(idx)];
+        }
+    }
+    return [result copy];
+}
+
+- (NSArray<__kindof UIView *> *)selectedViews {
+    return self.selectedViewsSet.array;
+}
+
+- (BOOL)isIndexSelected:(NSInteger)index {
+    NSArray<UIView *> *tagViews = self.tagViews;
+    if (index < 0 || index >= (NSInteger)tagViews.count) return NO;
+    return [self.selectedViewsSet containsObject:tagViews[index]];
+}
+
+#pragma mark - 选中态内部辅助
+
+- (void)applyStyleForView:(UIView *)view selected:(BOOL)selected {
+    if (!view) return;
+    NSInteger idx = [self.tagViews indexOfObjectIdenticalTo:view];
+    if (selected) {
+        if (self.selectedStyleBlock) self.selectedStyleBlock(view, idx);
+    } else {
+        if (self.normalStyleBlock) self.normalStyleBlock(view, idx);
+    }
+}
+
+/// 选中一个 view（不处理互斥逻辑，互斥由调用方在合适的场景下处理）
+- (void)markSelectView:(UIView *)view {
+    if (!view || [self.selectedViewsSet containsObject:view]) return;
+    [self.selectedViewsSet addObject:view];
+    [self applyStyleForView:view selected:YES];
+}
+
+/// 取消选中一个 view
+- (void)markDeselectView:(UIView *)view {
+    if (!view || ![self.selectedViewsSet containsObject:view]) return;
+    [self.selectedViewsSet removeObject:view];
+    [self applyStyleForView:view selected:NO];
+}
+
+- (void)notifySelectionChanged {
+    if (self.didChangeSelection) {
+        self.didChangeSelection(self, self.selectedIndexes);
+    }
+}
+
+#pragma mark - 点击切换选中态（拦截自 ZLViewTagListView 的点击回调入口）
+
+- (void)tagListView:(ZLTagListView *)tagListView didSelectTagAtIndex:(NSInteger)index {
+    NSArray<UIView *> *tagViews = self.tagViews;
+    if (index >= 0 && index < (NSInteger)tagViews.count) {
+        UIView *view = tagViews[index];
+        BOOL currentlySelected = [self.selectedViewsSet containsObject:view];
+
+        if (currentlySelected) {
+            if (self.allowsEmptySelection) {
+                [self markDeselectView:view];
+                [self notifySelectionChanged];
+            }
+            // 不允许清空选中时，点击已选中项不产生变化
+        } else {
+            if (self.selectionMode == ZLTagSelectionModeSingle) {
+                for (UIView *selected in self.selectedViewsSet.array) {
+                    [self markDeselectView:selected];
+                }
+            }
+            [self markSelectView:view];
+            [self notifySelectionChanged];
+        }
+    }
+    // 保留父类原始点击回调（didSelectTag Block），使外部仍能感知每次点击事件
+    [super tagListView:tagListView didSelectTagAtIndex:index];
+}
+
+#pragma mark - Public 选中操作
+
+- (void)selectIndex:(NSInteger)index {
+    NSArray<UIView *> *tagViews = self.tagViews;
+    if (index < 0 || index >= (NSInteger)tagViews.count) return;
+    UIView *view = tagViews[index];
+    if ([self.selectedViewsSet containsObject:view]) return;
+
+    if (self.selectionMode == ZLTagSelectionModeSingle) {
+        for (UIView *selected in self.selectedViewsSet.array) {
+            [self markDeselectView:selected];
+        }
+    }
+    [self markSelectView:view];
+    [self notifySelectionChanged];
+}
+
+- (void)deselectIndex:(NSInteger)index {
+    NSArray<UIView *> *tagViews = self.tagViews;
+    if (index < 0 || index >= (NSInteger)tagViews.count) return;
+    UIView *view = tagViews[index];
+    if (![self.selectedViewsSet containsObject:view]) return;
+    [self markDeselectView:view];
+    [self notifySelectionChanged];
+}
+
+- (void)deselectAll {
+    if (self.selectedViewsSet.count == 0) return;
+    for (UIView *selected in self.selectedViewsSet.array) {
+        [self markDeselectView:selected];
+    }
+    [self notifySelectionChanged];
+}
+
+- (void)setSelectedIndexes:(NSArray<NSNumber *> *)indexes {
+    for (UIView *selected in self.selectedViewsSet.array) {
+        [self markDeselectView:selected];
+    }
+    NSArray<UIView *> *tagViews = self.tagViews;
+    if (self.selectionMode == ZLTagSelectionModeSingle) {
+        NSNumber *first = indexes.firstObject;
+        if (first) {
+            NSInteger idx = first.integerValue;
+            if (idx >= 0 && idx < (NSInteger)tagViews.count) {
+                [self markSelectView:tagViews[idx]];
+            }
+        }
+    } else {
+        for (NSNumber *number in indexes) {
+            NSInteger idx = number.integerValue;
+            if (idx >= 0 && idx < (NSInteger)tagViews.count) {
+                [self markSelectView:tagViews[idx]];
+            }
+        }
+    }
+    [self notifySelectionChanged];
+}
+
+- (void)setSelectedIndex:(NSInteger)index {
+    [self setSelectedIndexes:@[@(index)]];
+}
+
+#pragma mark - 覆盖增删方法：新增视图默认应用未选中样式，删除视图时同步清理选中状态
+
+- (void)addView:(UIView *)view {
+    [super addView:view];
+    if (view && ![self.selectedViewsSet containsObject:view]) {
+        [self applyStyleForView:view selected:NO];
+    }
+}
+
+- (void)addViews:(NSArray<__kindof UIView *> *)views {
+    [super addViews:views];
+    for (UIView *view in views) {
+        if (view && ![self.selectedViewsSet containsObject:view]) {
+            [self applyStyleForView:view selected:NO];
+        }
+    }
+}
+
+- (void)insertView:(UIView *)view atIndex:(NSInteger)index {
+    [super insertView:view atIndex:index];
+    if (view && ![self.selectedViewsSet containsObject:view]) {
+        [self applyStyleForView:view selected:NO];
+    }
+}
+
+- (void)removeView:(UIView *)view {
+    if (view && [self.selectedViewsSet containsObject:view]) {
+        [self.selectedViewsSet removeObject:view];
+        [self notifySelectionChanged];
+    }
+    [super removeView:view];
+}
+
+- (void)removeViewAtIndex:(NSInteger)index {
+    NSArray<UIView *> *tagViews = self.tagViews;
+    if (index >= 0 && index < (NSInteger)tagViews.count) {
+        UIView *view = tagViews[index];
+        if ([self.selectedViewsSet containsObject:view]) {
+            [self.selectedViewsSet removeObject:view];
+            [self notifySelectionChanged];
+        }
+    }
+    [super removeViewAtIndex:index];
+}
+
+- (void)removeAllViews {
+    BOOL hadSelection = self.selectedViewsSet.count > 0;
+    [self.selectedViewsSet removeAllObjects];
+    [super removeAllViews];
+    if (hadSelection) {
+        [self notifySelectionChanged];
+    }
+}
+
+@end

@@ -5,6 +5,7 @@
 
 #import "ZLViewController.h"
 #import "ZLViewTagDemoController.h"
+#import "ZLSelectableTagDemoController.h"
 #import <ZLTagListView/ZLTagListView.h>
 
 @interface ZLViewController ()<ZLTagListViewDataSource>
@@ -46,10 +47,30 @@
                                          style:UIBarButtonItemStylePlain
                                         target:self
                                         action:@selector(openViewTagDemo)];
+    self.navigationItem.leftBarButtonItem =
+        [[UIBarButtonItem alloc] initWithTitle:@"Selectable Demo"
+                                         style:UIBarButtonItemStylePlain
+                                        target:self
+                                        action:@selector(openSelectableTagDemo)];
 }
 
 - (void)openViewTagDemo {
     ZLViewTagDemoController *vc = [ZLViewTagDemoController new];
+    if (self.navigationController) {
+        [self.navigationController pushViewController:vc animated:YES];
+    } else {
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+        nav.modalPresentationStyle = UIModalPresentationFullScreen;
+        vc.navigationItem.leftBarButtonItem =
+            [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                                                          target:self
+                                                          action:@selector(dismissDemo)];
+        [self presentViewController:nav animated:YES completion:nil];
+    }
+}
+
+- (void)openSelectableTagDemo {
+    ZLSelectableTagDemoController *vc = [ZLSelectableTagDemoController new];
     if (self.navigationController) {
         [self.navigationController pushViewController:vc animated:YES];
     } else {

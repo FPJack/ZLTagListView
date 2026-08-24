@@ -159,4 +159,51 @@ typedef NS_ENUM(NSInteger, ZLTagContentVerticalAlignment) {
 
 @end
 
+/// 标签选择模式
+typedef NS_ENUM(NSInteger, ZLTagSelectionMode) {
+    ZLTagSelectionModeSingle,   // 单选（默认）
+    ZLTagSelectionModeMultiple  // 多选
+};
+
+/// 便捷TagListView子类：在 ZLViewTagListView 基础上提供单选/多选能力
+/// 无需自己管理选中状态，通过 selectedStyleBlock / normalStyleBlock 自定义选中与未选中样式
+/// 通过 setSelectedIndex: / setSelectedIndexes: 设置默认选中标签（建议在 addView(s) 之后调用）
+@interface ZLSelectableTagListView : ZLViewTagListView
+
+/// 选择模式，默认单选。切换后会清空当前选中状态
+@property (nonatomic, assign) ZLTagSelectionMode selectionMode;
+
+/// 是否允许取消选中（再次点击已选中的标签是否可以取消选中），默认YES
+/// 单选模式下为NO时，代表必须始终保留一个选中项（点击已选中项不会取消选中）
+@property (nonatomic, assign) BOOL allowsEmptySelection;
+
+/// 当前选中的标签索引（只读，按选中顺序排列）
+@property (nonatomic, copy, readonly) NSArray<NSNumber *> *selectedIndexes;
+/// 当前选中的标签视图（只读，按选中顺序排列）
+@property (nonatomic, copy, readonly) NSArray<__kindof UIView *> *selectedViews;
+
+/// 选中态样式设置 Block：标签被选中时调用，在此设置选中时的外观（背景色/文字色等）
+@property (nonatomic, copy, nullable) void (^selectedStyleBlock)(__kindof UIView *view, NSInteger index);
+/// 未选中态（默认态）样式设置 Block：标签新增或被取消选中时调用
+@property (nonatomic, copy, nullable) void (^normalStyleBlock)(__kindof UIView *view, NSInteger index);
+
+/// 选中状态发生变化时回调（包含点击切换、以及调用 selectIndex:/setSelectedIndexes: 等接口触发的变化）
+@property (nonatomic, copy, nullable) void (^didChangeSelection)(ZLSelectableTagListView *tagListView, NSArray<NSNumber *> *selectedIndexes);
+
+/// 设置默认选中的标签索引（会先清空当前选中状态）。单选模式下仅第一个有效索引生效
+- (void)setSelectedIndexes:(NSArray<NSNumber *> *)indexes;
+/// 设置默认选中的单个标签索引（单选模式常用，等价于 setSelectedIndexes:@[@(index)]）
+- (void)setSelectedIndex:(NSInteger)index;
+
+/// 选中指定索引的标签（多选模式下不影响其他已选中项，单选模式下会先取消其他选中项）
+- (void)selectIndex:(NSInteger)index;
+/// 取消选中指定索引的标签
+- (void)deselectIndex:(NSInteger)index;
+/// 取消选中所有标签
+- (void)deselectAll;
+/// 指定索引的标签当前是否处于选中状态
+- (BOOL)isIndexSelected:(NSInteger)index;
+
+@end
+
 NS_ASSUME_NONNULL_END
